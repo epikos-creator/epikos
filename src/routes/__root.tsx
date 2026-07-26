@@ -13,7 +13,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Epikos — Story into Cinema" },
+      { title: "Epikos — Transform your story into a short film" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

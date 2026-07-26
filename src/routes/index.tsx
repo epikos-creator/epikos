@@ -30,32 +30,79 @@ function Home() {
 
 function Hero() {
   return (
-    <section className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
-      {/* Logo */}
-      <img
-        src="/logo.png"
-        alt="Epikos"
-        className="mb-10 h-28 w-28 sm:h-36 sm:w-36"
-      />
+    <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 text-center">
+      {/* Background decorative elements */}
+      <div className="pointer-events-none absolute inset-0 select-none">
+        {/* Radial gradient behind logo */}
+        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/5 blur-[100px]" />
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(209,169,92,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(209,169,92,0.3) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+          }}
+        />
+        {/* Top/center accent line */}
+        <div className="absolute left-1/2 top-0 h-px w-64 -translate-x-1/2 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+      </div>
 
-      {/* Headline */}
-      <h1 className="font-heading text-4xl font-bold tracking-wide text-gold sm:text-6xl lg:text-7xl">
-        Story into Cinema
-      </h1>
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Logo */}
+        <img
+          src="/logo.png"
+          alt="Epikos"
+          className="mb-8 h-24 w-24 drop-shadow-[0_0_40px_rgba(209,169,92,0.15)] sm:h-32 sm:w-32"
+        />
 
-      {/* Subheadline */}
-      <p className="mt-6 max-w-xl text-lg text-gray-300 sm:text-xl">
-        AI that transforms any story — from <em>The Odyssey</em> to your
-        original idea — into a fully-produced short film.
-      </p>
+        {/* Badge */}
+        <span className="mb-6 inline-block rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
+          Text-to-Movie
+        </span>
 
-      {/* CTA Button */}
-      <a
-        href="#waitlist"
-        className="mt-10 inline-block rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/80 hover:shadow-lg hover:shadow-gold/30"
-      >
-        Join the Waitlist
-      </a>
+        {/* Headline */}
+        <h1 className="max-w-4xl font-heading text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+          Transform your story{" "}
+          <span className="text-gold">into a short film</span>
+        </h1>
+
+        {/* Subheadline */}
+        <p className="mt-6 max-w-xl text-base leading-relaxed text-gray-300 sm:text-lg">
+          AI-powered filmmaking — from <em className="text-gold not-italic">The Odyssey</em>{" "}
+          to your original idea. Script adaptation, scene generation, voice acting, and
+          music scoring, all in one flow.
+        </p>
+
+        {/* CTAs */}
+        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
+          <a
+            href="#waitlist"
+            className="group inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30"
+          >
+            Join the Waitlist
+            <svg
+              className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <a
+            href="#features"
+            className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-8 py-4 font-heading text-sm font-bold tracking-widest text-gold uppercase transition-all hover:border-gold hover:bg-gold/10"
+          >
+            Try the Odyssey Demo
+          </a>
+        </div>
+      </div>
+
+      {/* Bottom gradient fade */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-navy to-transparent" />
     </section>
   );
 }
@@ -66,10 +113,10 @@ const features = [
   {
     title: "Script Adaptation",
     description:
-      "AI reads your story and crafts a cinematic screenplay — preserving the soul of the original while shaping it for the screen.",
+      "AI reads your story and crafts a cinematic screenplay, preserving the soul of the original while shaping it for the screen.",
     icon: (
       <svg
-        className="h-10 w-10 text-gold"
+        className="h-8 w-8 text-gold"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -86,10 +133,10 @@ const features = [
   {
     title: "Scene Generation",
     description:
-      "Every scene rendered as stunning AI-generated visuals — rich environments, expressive characters, and cinematic composition.",
+      "Every scene rendered as stunning AI-generated visuals with rich environments, expressive characters, and cinematic composition.",
     icon: (
       <svg
-        className="h-10 w-10 text-gold"
+        className="h-8 w-8 text-gold"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -104,12 +151,32 @@ const features = [
     ),
   },
   {
-    title: "Voice & Score",
+    title: "Voice Acting",
     description:
-      "Professional voice acting and an original music score — all AI-generated — bringing emotional depth to every moment.",
+      "Professional AI-generated voice performances that bring emotional depth and personality to every character and line.",
     icon: (
       <svg
-        className="h-10 w-10 text-gold"
+        className="h-8 w-8 text-gold"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={1.5}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: "Music Scoring",
+    description:
+      "Original AI-composed scores tailored to your story's mood — epic orchestral, intimate piano, or anything in between.",
+    icon: (
+      <svg
+        className="h-8 w-8 text-gold"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -127,29 +194,50 @@ const features = [
 
 function Features() {
   return (
-    <section className="px-6 py-24 sm:px-12 lg:px-24">
-      <h2 className="font-heading text-center text-3xl font-bold text-gold sm:text-4xl">
-        How It Works
-      </h2>
-      <p className="mx-auto mt-4 max-w-lg text-center text-gray-400">
-        Three pillars that turn any story into a cinematic experience.
-      </p>
+    <section id="features" className="px-6 py-24 sm:px-12 lg:px-24">
+      {/* Section header */}
+      <div className="mx-auto max-w-2xl text-center">
+        <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
+          How It Works
+        </span>
+        <h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">
+          One story, one click,{" "}
+          <span className="text-gold">one film</span>
+        </h2>
+        <p className="mt-4 text-gray-400">
+          Four AI-powered pillars that turn any story into a cinematic experience — no
+          crew, no cameras, no compromise.
+        </p>
+      </div>
 
-      <div className="mx-auto mt-16 grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-3">
-        {features.map((f) => (
+      {/* Feature cards — 2×2 grid on desktop */}
+      <div className="mx-auto mt-16 grid max-w-5xl gap-6 sm:grid-cols-2">
+        {features.map((f, i) => (
           <div
             key={f.title}
-            className="rounded-xl border border-gray-800 bg-white/5 p-8 text-center transition hover:border-gold/40 hover:bg-white/[0.07]"
+            className="group relative overflow-hidden rounded-2xl border border-gray-800 bg-white/[0.03] p-8 transition-all duration-300 hover:border-gold/30 hover:bg-white/[0.05]"
           >
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
-              {f.icon}
+            {/* Number accent */}
+            <span className="absolute -right-4 -top-4 font-heading text-8xl font-bold text-white/[0.02] select-none">
+              {i + 1}
+            </span>
+
+            <div className="relative">
+              {/* Icon */}
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10 ring-1 ring-gold/20 transition-colors group-hover:bg-gold/20">
+                {f.icon}
+              </div>
+
+              {/* Title */}
+              <h3 className="font-heading text-xl font-semibold text-white">
+                {f.title}
+              </h3>
+
+              {/* Description */}
+              <p className="mt-3 text-sm leading-relaxed text-gray-400">
+                {f.description}
+              </p>
             </div>
-            <h3 className="font-heading text-xl font-semibold text-white">
-              {f.title}
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-gray-400">
-              {f.description}
-            </p>
           </div>
         ))}
       </div>
@@ -166,7 +254,12 @@ const plans = [
     period: "/mo",
     films: "1 film/mo (3 min)",
     quality: "Watermarked",
-    features: ["1 short film per month", "Up to 3 minutes", "Watermarked output"],
+    features: [
+      "1 short film per month",
+      "Up to 3 minutes",
+      "Watermarked output",
+      "720p resolution",
+    ],
     highlight: false,
     href: "#waitlist",
   },
@@ -206,25 +299,32 @@ const plans = [
 function Pricing() {
   return (
     <section className="px-6 py-24 sm:px-12 lg:px-24">
-      <h2 className="font-heading text-center text-3xl font-bold text-gold sm:text-4xl">
-        Plans
-      </h2>
-      <p className="mx-auto mt-4 max-w-lg text-center text-gray-400">
-        Start free, upgrade when you're ready.
-      </p>
+      {/* Section header */}
+      <div className="mx-auto max-w-2xl text-center">
+        <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
+          Pricing
+        </span>
+        <h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">
+          Start free,{" "}
+          <span className="text-gold">scale when ready</span>
+        </h2>
+        <p className="mt-4 text-gray-400">
+          No hidden fees. Upgrade or downgrade anytime.
+        </p>
+      </div>
 
       <div className="mx-auto mt-16 grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`relative flex flex-col rounded-xl border p-8 ${
+            className={`relative flex flex-col rounded-2xl border p-8 transition-all duration-300 ${
               plan.highlight
-                ? "border-gold bg-gold/5 shadow-lg shadow-gold/10"
-                : "border-gray-800 bg-white/5"
+                ? "border-gold bg-gold/[0.06] shadow-xl shadow-gold/5 ring-1 ring-gold/20"
+                : "border-gray-800 bg-white/[0.02] hover:border-gray-700"
             }`}
           >
             {plan.highlight && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gold px-4 py-1 font-heading text-xs font-bold tracking-widest text-navy uppercase">
+              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gold px-5 py-1.5 font-heading text-xs font-bold tracking-widest text-navy uppercase">
                 Most Popular
               </span>
             )}
@@ -233,17 +333,17 @@ function Pricing() {
               {plan.name}
             </h3>
             <div className="mt-4">
-              <span className="font-heading text-4xl font-bold text-gold">
+              <span className="font-heading text-5xl font-bold text-gold">
                 {plan.price}
               </span>
               <span className="text-gray-400">{plan.period}</span>
             </div>
-            <p className="mt-1 text-sm font-medium text-gray-300">
+            <p className="mt-2 text-sm font-medium text-gray-300">
               {plan.films}
             </p>
             <p className="text-sm text-gray-400">{plan.quality}</p>
 
-            <ul className="mt-6 flex-1 space-y-3 border-t border-gray-800 pt-6">
+            <ul className="mt-6 flex-1 space-y-3 border-t border-gray-800/50 pt-6">
               {plan.features.map((f) => (
                 <li key={f} className="flex items-start gap-3 text-sm text-gray-300">
                   <svg
@@ -266,13 +366,13 @@ function Pricing() {
 
             <a
               href={plan.href}
-              className={`mt-8 block rounded-full px-6 py-3 text-center font-heading text-sm font-bold tracking-widest uppercase transition ${
+              className={`mt-8 block rounded-full px-6 py-3.5 text-center font-heading text-sm font-bold tracking-widest uppercase transition-all duration-300 ${
                 plan.highlight
-                  ? "bg-gold text-navy hover:bg-gold/80"
+                  ? "bg-gold text-navy hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/25"
                   : "border border-gold text-gold hover:bg-gold/10"
               }`}
             >
-              Get Started
+              {plan.highlight ? "Subscribe Now" : plan.name === "Free" ? "Get Started" : "Subscribe Now"}
             </a>
           </div>
         ))}
@@ -285,16 +385,20 @@ function Pricing() {
 
 function Waitlist() {
   return (
-    <section
-      id="waitlist"
-      className="px-6 py-24 sm:px-12 lg:px-24"
-    >
-      <div className="mx-auto max-w-xl rounded-2xl border border-gold/30 bg-gold/5 px-8 py-14 text-center">
-        <h2 className="font-heading text-3xl font-bold text-gold sm:text-4xl">
+    <section id="waitlist" className="px-6 py-24 sm:px-12 lg:px-24">
+      <div className="relative mx-auto max-w-xl overflow-hidden rounded-2xl border border-gold/20 bg-gold/[0.04] px-8 py-14 text-center">
+        {/* Decorative corner accents */}
+        <div className="absolute left-0 top-0 h-px w-16 bg-gradient-to-r from-gold/40 to-transparent" />
+        <div className="absolute left-0 top-0 h-16 w-px bg-gradient-to-b from-gold/40 to-transparent" />
+        <div className="absolute right-0 top-0 h-px w-16 bg-gradient-to-l from-gold/40 to-transparent" />
+        <div className="absolute right-0 top-0 h-16 w-px bg-gradient-to-b from-gold/40 to-transparent" />
+
+        <h2 className="font-heading text-3xl font-bold text-white sm:text-4xl">
           Get Early Access
         </h2>
         <p className="mt-4 text-gray-400">
-          Be first to turn your stories into films.
+          Be the first to turn stories into films. Join the waitlist and we'll let
+          you know when Epikos launches.
         </p>
 
         <WaitlistForm />
@@ -307,18 +411,21 @@ function Waitlist() {
 
 function Footer() {
   return (
-    <footer className="border-t border-gray-800 px-6 py-8 text-center text-sm text-gray-500">
-      <p>
-        &copy; 2026 Epikos. Built with{" "}
-        <a
-          href="https://cto.new"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gold underline hover:text-gold/80"
-        >
-          cto.new
-        </a>
-      </p>
+    <footer className="border-t border-gray-800/50 px-6 py-10 text-center text-sm text-gray-500">
+      <div className="flex flex-col items-center gap-2">
+        <p>&copy; 2026 Epikos. All rights reserved.</p>
+        <p>
+          Built with{" "}
+          <a
+            href="https://cto.new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gold underline decoration-gold/30 underline-offset-4 transition-colors hover:text-gold/80 hover:decoration-gold/60"
+          >
+            cto.new
+          </a>
+        </p>
+      </div>
     </footer>
   );
 }

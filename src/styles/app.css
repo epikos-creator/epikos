@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #d1a95c;
+  --color-navy: #1a1a2e;
+  --font-heading: "Cinzel", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-navy text-white antialiased;
+    font-family: "Inter", sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Cinzel", serif;
+  }
+}

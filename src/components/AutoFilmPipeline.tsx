@@ -7,6 +7,11 @@ import type { VoiceProfile } from "~/routes/api/generate-voiceover";
 import { useBackgroundMusic } from "~/hooks/useBackgroundMusic";
 import { useVideoExport } from "~/hooks/useVideoExport";
 import { saveFilm, type SavedFilm } from "~/components/FilmHistory";
+import { canGenerateFreeFilm, recordFreeFilmGeneration } from "~/hooks/useFreeTier";
+import { useSubscription } from "~/hooks/useSubscription";
+import { useAnalytics } from "~/hooks/useAnalytics";
+import { UpgradePrompt } from "~/components/UpgradePrompt";
+import { ShareModal } from "~/components/ShareModal";
 
 /* ── Pipeline stages ── */
 type PipelineStage =
@@ -85,11 +90,18 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
   const [script, setScript] = useState<Script | null>(savedFilm ? { title: savedFilm.title, logline: savedFilm.logline, scenes: savedFilm.scenes, duration_estimate: savedFilm.duration_estimate } : null);
   const [error, setError] = useState("");
   const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
-  const [playerState, setPlayerState] = useState<"idle" | "playing" | "paused" | "done">(savedFilm ? "paused" : "idle");
+  const [playerState, setPlayerState] = useState<"idle" | "titleCard" | "playing" | "paused" | "done" | "credits">(savedFilm ? "paused" : "idle");
   const [playerLineIdx, setPlayerLineIdx] = useState(-1);
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
   const [filmSaved, setFilmSaved] = useState(!!savedFilm);
   const [showVideoExport, setShowVideoExport] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [freeTierBlocked, setFreeTierBlocked] = useState(false);
+  const [transitionScene, setTransitionScene] = useState<{ from: number; to: number } | null>(null);
+
+  const { isPaid } = useSubscription();
+  const { track } = useAnalytics();
 
   const stageIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
@@ -107,6 +119,19 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
     const state = { cancelled: false };
 
     async function runPipeline() {
+      // Check free tier limit
+      if (!isPaid) {
+        const check = canGenerateFreeFilm();
+        if (!check.allowed) {
+          setFreeTierBlocked(true);
+          setShowUpgrade(true);
+          track("free_tier_blocked", "film", { reason: check.reason || "limit_reached" });
+          return;
+        }
+      }
+
+      let generatedScript: Script | null = null;
+
       // Stage 1: Script
       setStage("script");
       await simulateProgress("script", state);
@@ -115,6 +140,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
       try {
         const result = await generateScript({ data: { prompt: "" } });
         if (state.cancelled) return;
+        generatedScript = result;
         setScript(result);
       } catch (err: any) {
         if (!state.cancelled) setError(err?.message || "Failed to generate script");
@@ -148,14 +174,21 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
       // Complete
       setStage("complete");
+      // Record free tier usage
+      if (!isPaid) {
+        recordFreeFilmGeneration();
+        track("film_generated_free", "film", { scenes: generatedScript?.scenes.length ?? 0 });
+      } else {
+        track("film_generated_paid", "film", { scenes: generatedScript?.scenes.length ?? 0 });
+      }
       // Save to localStorage
-      if (result && !filmSaved) {
-        saveFilm(result);
+      if (generatedScript && !filmSaved) {
+        saveFilm(generatedScript);
         setFilmSaved(true);
       }
       await new Promise((r) => setTimeout(r, 600));
       if (!state.cancelled) {
-        setPlayerState("playing");
+        setPlayerState("titleCard");
       }
     }
 
@@ -195,6 +228,24 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
   /* ── Auto-playback ── */
   useEffect(() => {
+    if (!script) return;
+
+    // Handle title card → playing transition
+    if (playerState === "titleCard") {
+      const timer = setTimeout(() => {
+        setPlayerState("playing");
+      }, 3500); // Show title card for 3.5 seconds
+      return () => clearTimeout(timer);
+    }
+
+    if (playerState === "credits") {
+      // Credits auto-advance to "done" after display
+      const timer = setTimeout(() => {
+        setPlayerState("done");
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+
     if (playerState !== "playing" || !script) return;
 
     playingRef.current = true;
@@ -213,13 +264,22 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
     async function playAllScenes() {
       for (let sIdx = currentSceneIdx; sIdx < scenes.length; sIdx++) {
         if (!playingRef.current) break;
+        
+        // Scene transition effect
+        if (sIdx > 0) {
+          setTransitionScene({ from: sIdx - 1, to: sIdx });
+          await sleep(1200); // Transition duration
+          setTransitionScene(null);
+        }
+        if (!playingRef.current) break;
+        
         setCurrentSceneIdx(sIdx);
 
         const scene = scenes[sIdx];
         setPlayerLineIdx(-1);
 
-        if (sIdx > 0) {
-          await sleep(800);
+        if (sIdx > 0 && !transitionScene) {
+          await sleep(400);
         }
         if (!playingRef.current) break;
 
@@ -234,8 +294,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
       }
 
       if (playingRef.current) {
-        setPlayerState("done");
-        setCurrentSceneIdx(scenes.length - 1);
+        setPlayerState("credits");
       }
     }
 
@@ -485,6 +544,8 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
   const isPlaying = playerState === "playing";
   const isDone = playerState === "done";
   const isPaused = playerState === "paused";
+  const isTitleCard = playerState === "titleCard";
+  const isCredits = playerState === "credits";
 
   return (
     <div className="auto-film-player relative mx-auto mt-8 max-w-5xl animate-[storyboard-fade-in_0.5s_ease-out]">
@@ -568,6 +629,22 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
         </div>
       )}
 
+      {/* ── Upgrade Prompt ── */}
+      {showUpgrade && (
+        <UpgradePrompt
+          onClose={() => setShowUpgrade(false)}
+          reason={freeTierBlocked ? "You've used your free film for today. Upgrade to create unlimited films." : undefined}
+        />
+      )}
+
+      {/* ── Share Modal ── */}
+      {showShare && script && (
+        <ShareModal
+          script={script}
+          onClose={() => setShowShare(false)}
+        />
+      )}
+
       {/* ── Film Player Card ── */}
       <div className="relative overflow-hidden rounded-2xl border border-gold/20 bg-black/40 backdrop-blur-sm">
         {/* Decorative top bar */}
@@ -587,25 +664,98 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
         {/* Main screen */}
         <div className="relative aspect-video w-full bg-navy overflow-hidden">
-          {!imgErrors.has(currentScene.scene_number) ? (
+          {/* ── Title Card ── */}
+          {isTitleCard && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-navy via-navy to-navy/90 animate-[storyboard-fade-in_0.8s_ease-out] z-10">
+              {/* Logo */}
+              <img
+                src="/logo.png"
+                alt="Epikos"
+                className="mb-6 h-20 w-20 drop-shadow-[0_0_60px_rgba(209,169,92,0.4)] animate-[storyboard-fade-in_0.6s_ease-out]"
+              />
+              {/* Badge */}
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-5 py-2 animate-[storyboard-fade-in_0.6s_ease-out_0.2s_both]">
+                <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+                <span className="font-heading text-[10px] font-semibold tracking-[0.2em] text-gold uppercase">
+                  Epikos Presents
+                </span>
+              </div>
+              {/* Title */}
+              <h2 className="font-heading text-4xl font-extrabold text-white text-center px-8 leading-tight animate-[storyboard-fade-in_0.6s_ease-out_0.4s_both] sm:text-5xl">
+                The Odyssey
+              </h2>
+              <div className="mt-4 h-px w-24 bg-gradient-to-r from-transparent via-gold/60 to-transparent animate-[storyboard-fade-in_0.6s_ease-out_0.5s_both]" />
+              <h3 className="mt-4 font-heading text-2xl font-bold text-gold animate-[storyboard-fade-in_0.6s_ease-out_0.6s_both] sm:text-3xl">
+                {script.title}
+              </h3>
+              <p className="mt-6 max-w-md text-center text-sm italic text-gray-400 px-6 animate-[storyboard-fade-in_0.6s_ease-out_0.8s_both]">
+                {script.logline}
+              </p>
+            </div>
+          )}
+
+          {/* ── End Credits ── */}
+          {isCredits && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-black via-navy to-black animate-[storyboard-fade-in_0.6s_ease-out] z-10">
+              <div className="text-center animate-[storyboard-fade-in_0.6s_ease-out_0.2s_both]">
+                <img src="/logo.png" alt="Epikos" className="mx-auto mb-4 h-12 w-12 opacity-60" />
+                <p className="font-heading text-xs font-semibold tracking-[0.2em] text-gold/60 uppercase">An Epikos Production</p>
+                <h3 className="mt-4 font-heading text-2xl font-bold text-white">{script.title}</h3>
+                <p className="mt-1 text-sm text-gray-400">Adapted from The Odyssey by Homer</p>
+              </div>
+              <div className="mt-8 w-full max-w-sm space-y-3 text-center animate-[storyboard-fade-in_0.6s_ease-out_0.5s_both]">
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+                <p className="font-heading text-[10px] font-semibold tracking-[0.2em] text-gold/70 uppercase">Cast &amp; Crew</p>
+                <div className="space-y-1.5 text-xs text-gray-400">
+                  <p>Odysseus — AI Voice Synthesis</p>
+                  <p>Polyphemus — AI Voice Synthesis</p>
+                  <p>Original Score — Web Audio Orchestra</p>
+                  <p>Directed by — Artificial Intelligence</p>
+                </div>
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+                <p className="mt-4 text-[11px] text-gray-500">
+                  Created with{" "}
+                  <span className="text-gold font-heading font-semibold tracking-wider">EPIKOS</span>
+                  {" "}— AI-Powered Filmmaking
+                </p>
+                <p className="text-[10px] text-gray-600">{script.scenes.length} scenes · {script.duration_estimate}</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Scene Image ── */}
+          {!isTitleCard && !isCredits && (
+          !imgErrors.has(currentScene.scene_number) ? (
             <img
               src={sceneImg}
               alt={`Scene ${currentScene.scene_number}: ${currentScene.location}`}
-              className={`h-full w-full object-cover transition-all duration-700 ${isPlaying ? "scale-105" : "scale-100"}`}
+              className={`h-full w-full object-cover transition-all duration-700 ${isPlaying ? "scale-105" : "scale-100"} ${transitionScene ? "opacity-20" : "opacity-100"}`}
               onError={() => setImgErrors((prev) => new Set(prev).add(currentScene.scene_number))}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gold/[0.06] to-navy">
               <span className="font-heading text-7xl font-bold text-gold/15">{currentScene.scene_number}</span>
             </div>
-          )}
+          ))}
 
           {/* Vignette overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
+          {/* Scene transition overlay */}
+          {transitionScene && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80 animate-[storyboard-fade-in_0.4s_ease-out] z-20">
+              <div className="text-center">
+                <div className="mx-auto mb-4 h-1 w-32 bg-gradient-to-r from-transparent via-gold/60 to-transparent rounded-full animate-pulse" />
+                <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
+                  Scene {transitionScene.to + 1}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Music indicator */}
           {isPlaying && (
-            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1.5 border border-gold/20">
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1.5 border border-gold/20 z-10">
               <svg className="h-3 w-3 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
               </svg>
@@ -614,7 +764,8 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
           )}
 
           {/* Scene info overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6">
+          {!isTitleCard && !isCredits && (
+          <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
             <div className="flex items-baseline gap-3">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold/20 font-heading text-sm font-bold text-gold ring-1 ring-gold/30">
                 {currentScene.scene_number}
@@ -629,10 +780,11 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
               </div>
             </div>
           </div>
+          )}
 
           {/* Dialogue overlay */}
           {isPlaying && playerLineIdx >= 0 && playerLineIdx < currentScene.dialogue.length && (
-            <div className="absolute left-0 right-0 top-6 flex justify-center">
+            <div className="absolute left-0 right-0 top-6 flex justify-center z-10">
               <div className="rounded-xl bg-black/60 backdrop-blur-md px-5 py-3 text-center border border-gold/20">
                 <span className="block font-heading text-[10px] font-bold tracking-wider text-gold uppercase">
                   {currentScene.dialogue[playerLineIdx].character}
@@ -646,7 +798,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
           {/* Paused overlay */}
           {isPaused && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-20">
               <div className="flex flex-col items-center gap-3">
                 <svg className="h-12 w-12 text-gold/80" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
@@ -658,7 +810,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
           {/* Done overlay */}
           {isDone && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">
               <div className="flex flex-col items-center gap-4 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/20 ring-1 ring-gold/40">
                   <svg className="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -773,9 +925,9 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
           </div>
 
           <span className={`font-mono text-[10px] ${
-            isPlaying ? "text-gold animate-pulse" : isDone ? "text-gold/60" : "text-gray-500"
+            isPlaying ? "text-gold animate-pulse" : isDone ? "text-gold/60" : isTitleCard ? "text-gold/80" : isCredits ? "text-gold/60" : "text-gray-500"
           }`}>
-            {isPlaying ? "▶ LIVE" : isPaused ? "⏸ PAUSED" : isDone ? "✓ DONE" : ""}
+            {isPlaying ? "▶ LIVE" : isPaused ? "⏸ PAUSED" : isTitleCard ? "🎬 TITLE" : isCredits ? "★ CREDITS" : isDone ? "✓ DONE" : ""}
           </span>
         </div>
 
@@ -788,6 +940,16 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
             Web Audio orchestral score &bull; Web Speech voices
           </div>
           <div className="flex items-center gap-2">
+            {/* Share button */}
+            <button
+              onClick={() => { setShowShare(true); track("share_clicked", "share", { title: script.title }); }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 px-4 py-2 font-heading text-[10px] font-bold tracking-wider text-gold uppercase transition hover:bg-gold/10"
+            >
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+              </svg>
+              Share
+            </button>
             {/* Export Video button */}
             <button
               onClick={handleExportVideo}

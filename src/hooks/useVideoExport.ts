@@ -13,7 +13,8 @@ interface VideoExportState {
 /**
  * Renders scenes to canvas + captures via MediaRecorder to produce a .webm film.
  * Uses scene images drawn on canvas with cinematic overlays, timed to match
- * scene durations. Audio is captured from a generated AudioContext tone track.
+ * scene durations. Includes title card, scene transitions, and end credits.
+ * Audio is captured from a generated AudioContext tone track.
  */
 export function useVideoExport(script: Script | null) {
   const [exportState, setExportState] = useState<VideoExportState>({
@@ -33,6 +34,9 @@ export function useVideoExport(script: Script | null) {
 
   const exportVideo = useCallback(async () => {
     if (!script || script.scenes.length === 0) return;
+    
+    // Capture script in a local constant for type narrowing
+    const s = script;
 
     abortRef.current = false;
     setExportState({ status: "recording", progress: 0 });
@@ -83,9 +87,16 @@ export function useVideoExport(script: Script | null) {
 
     // ── Render each scene frame by frame ──
     const sceneDurationMs = 4000; // 4 seconds per scene
+    const titleCardDurationMs = 3000; // 3 sec title card
+    const creditsDurationMs = 3500; // 3.5 sec credits
+    const transitionDurationMs = 800; // 0.8 sec crossfade between scenes
     const frameInterval = 1000 / 30; // 30 fps
 
-    const totalScenes = script.scenes.length;
+    const totalScenes = s.scenes.length;
+    // Total "segments": title + scenes + transitions between scenes + credits
+    const totalSegments = 1 + totalScenes + (totalScenes > 0 ? totalScenes - 1 : 0) + 1;
+    const estimatedTotalMs = titleCardDurationMs + totalScenes * sceneDurationMs + 
+      (totalScenes > 0 ? (totalScenes - 1) * transitionDurationMs : 0) + creditsDurationMs;
 
     // Load all scene images
     const imageCache = new Map<number, HTMLImageElement>();
@@ -105,7 +116,7 @@ export function useVideoExport(script: Script | null) {
     try {
       // Preload images
       await Promise.all(
-        script.scenes.map((s) => loadImage(s.scene_number))
+        s.scenes.map((sc) => loadImage(sc.scene_number))
       );
     } catch (err: any) {
       setExportState({ status: "error", progress: 0, error: err?.message || "Image load failed" });
@@ -114,9 +125,136 @@ export function useVideoExport(script: Script | null) {
       return;
     }
 
+    // ── Drawing functions ──
+    
+    // Clear and fill background
+    function fillBackground() {
+      const grad = ctx.createLinearGradient(0, 0, 1920, 1080);
+      grad.addColorStop(0, "#1a1a2e");
+      grad.addColorStop(1, "#0d0d1a");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1920, 1080);
+    }
+    
+    // Draw title card
+    function drawTitleCard(progress: number) {
+      fillBackground();
+      const alpha = Math.min(1, progress * 2); // fade in
+      
+      ctx.globalAlpha = alpha;
+      
+      // Logo area
+      ctx.fillStyle = "#d1a95c";
+      ctx.beginPath();
+      ctx.arc(960, 300, 60, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // "Epikos Presents" badge
+      ctx.fillStyle = "#d1a95c";
+      ctx.font = "600 20px Cinzel, serif";
+      ctx.textAlign = "center";
+      ctx.fillText("EPIKOS PRESENTS", 960, 440);
+      
+      // Decorative line
+      ctx.strokeStyle = "rgba(209,169,92,0.6)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(660, 480);
+      ctx.lineTo(1260, 480);
+      ctx.stroke();
+      
+      // Title
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 64px Cinzel, serif";
+      ctx.fillText("THE ODYSSEY", 960, 580);
+      
+      // Subtitle
+      ctx.fillStyle = "#d1a95c";
+      ctx.font = "bold 36px Cinzel, serif";
+      ctx.fillText(s.title, 960, 650);
+      
+      // Logline
+      ctx.fillStyle = "rgba(200,200,200,0.8)";
+      ctx.font = "italic 18px Inter, serif";
+      const words = s.logline.split(" ");
+      let line = "";
+      let y = 730;
+      for (const word of words) {
+        const test = line + word + " ";
+        if (ctx.measureText(test).width > 800) {
+          ctx.fillText(line.trim(), 960, y);
+          line = word + " ";
+          y += 28;
+        } else {
+          line = test;
+        }
+      }
+      if (line.trim()) ctx.fillText(line.trim(), 960, y);
+      
+      // Bottom gradient
+      const bottomGrad = ctx.createLinearGradient(0, 800, 0, 1080);
+      bottomGrad.addColorStop(0, "rgba(26,26,46,0)");
+      bottomGrad.addColorStop(1, "rgba(26,26,46,1)");
+      ctx.fillStyle = bottomGrad;
+      ctx.fillRect(0, 800, 1920, 280);
+      
+      ctx.globalAlpha = 1;
+    }
+    
+    // Draw end credits
+    function drawCredits(progress: number) {
+      fillBackground();
+      const scrollY = progress * 200; // scroll up
+      
+      ctx.fillStyle = "rgba(209,169,92,0.6)";
+      ctx.font = "600 14px Cinzel, serif";
+      ctx.textAlign = "center";
+      ctx.fillText("AN EPIKOS PRODUCTION", 960, 400 - scrollY);
+      
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 32px Cinzel, serif";
+      ctx.fillText(s.title, 960, 460 - scrollY);
+      
+      ctx.fillStyle = "rgba(180,180,180,0.8)";
+      ctx.font = "16px Inter, serif";
+      ctx.fillText("Adapted from The Odyssey by Homer", 960, 500 - scrollY);
+      
+      // Divider
+      ctx.strokeStyle = "rgba(209,169,92,0.3)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(760, 530 - scrollY);
+      ctx.lineTo(1160, 530 - scrollY);
+      ctx.stroke();
+      
+      ctx.fillStyle = "rgba(209,169,92,0.8)";
+      ctx.font = "600 14px Cinzel, serif";
+      ctx.fillText("CAST & CREW", 960, 570 - scrollY);
+      
+      const credits = [
+        "Odysseus — AI Voice Synthesis",
+        "Polyphemus — AI Voice Synthesis",
+        "Eurylochus — AI Voice Synthesis",
+        "",
+        "Original Score — Web Audio Orchestra",
+        "Directed by — Artificial Intelligence",
+        "",
+        `Created with EPIKOS — AI-Powered Filmmaking`,
+        `${s.scenes.length} scenes · ${s.duration_estimate}`,
+      ];
+      
+      ctx.fillStyle = "rgba(180,180,180,0.7)";
+      ctx.font = "14px Inter, serif";
+      credits.forEach((line, i) => {
+        ctx.fillText(line, 960, 620 + i * 28 - scrollY);
+      });
+    }
+
     // Draw function for a single scene
-    function drawScene(scene: Scene, progress: number) {
+    function drawScene(scene: Scene, progress: number, alpha: number = 1) {
       ctx.clearRect(0, 0, 1920, 1080);
+      
+      ctx.globalAlpha = alpha;
 
       const img = imageCache.get(scene.scene_number);
       if (img) {
@@ -129,11 +267,7 @@ export function useVideoExport(script: Script | null) {
         ctx.drawImage(img, ix, iy, iw, ih);
       } else {
         // Fallback gradient
-        const grad = ctx.createLinearGradient(0, 0, 1920, 1080);
-        grad.addColorStop(0, "#1a1a2e");
-        grad.addColorStop(1, "#0d0d1a");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 1920, 1080);
+        fillBackground();
       }
 
       // Vignette
@@ -171,12 +305,15 @@ export function useVideoExport(script: Script | null) {
 
       ctx.fillStyle = "#d1a95c";
       ctx.font = "600 16px Cinzel, serif";
-      ctx.fillText(`EPIKOS PRESENTS  ·  ${script.title}  ·  Scene ${scene.scene_number}/${script.scenes.length}`, 40, barY + 55);
+      ctx.fillText(`EPIKOS PRESENTS  ·  ${s.title}  ·  Scene ${scene.scene_number}/${s.scenes.length}`, 40, barY + 55);
 
       // Progress bar at bottom
-      const barProgress = (script.scenes.indexOf(scene) + progress) / script.scenes.length;
+      const sceneIdx = s.scenes.indexOf(scene);
+      const barProgress = (sceneIdx + progress) / s.scenes.length;
       ctx.fillStyle = "rgba(209,169,92,0.3)";
       ctx.fillRect(0, barY - 4, 1920 * barProgress, 4);
+      
+      ctx.globalAlpha = 1;
     }
 
     // Play audio tones for each scene (simple orchestral stabs)
@@ -195,32 +332,89 @@ export function useVideoExport(script: Script | null) {
       osc.stop(audioCtx.currentTime + 1.5);
     }
 
-    // Render loop
+    // ── Render loop with title card → scenes (with transitions) → credits ──
+    let elapsedMs = 0;
+    
+    // Helper: render frames for a given duration with a draw callback
+    async function renderFrames(
+      durationMs: number,
+      drawFn: (progress: number) => void,
+    ) {
+      const totalFrames = Math.floor(durationMs / frameInterval);
+      for (let f = 0; f < totalFrames; f++) {
+        if (abortRef.current) return false;
+        const progress = f / totalFrames;
+        drawFn(progress);
+        
+        const overallProgress = Math.round((elapsedMs / estimatedTotalMs) * 100);
+        elapsedMs += frameInterval;
+        setExportState((prev) =>
+          prev.status === "recording" ? { ...prev, progress: Math.min(overallProgress, 99) } : prev
+        );
+        
+        await new Promise<void>((resolve) => setTimeout(resolve, frameInterval));
+      }
+      return true;
+    }
+    
+    // 1. Title Card
+    if (!(await renderFrames(titleCardDurationMs, drawTitleCard))) {
+      recorder.stop(); audioCtx.close(); return;
+    }
+    
+    // 2. Scenes with transitions
     for (let sIdx = 0; sIdx < totalScenes; sIdx++) {
       if (abortRef.current) break;
-
-      const scene = script.scenes[sIdx];
+      
+      const scene = s.scenes[sIdx];
       playSceneTone(sIdx);
-
-      const totalFrames = Math.floor(sceneDurationMs / frameInterval);
-      for (let f = 0; f < totalFrames; f++) {
-        if (abortRef.current) break;
-        const progress = f / totalFrames;
-        drawScene(scene, progress);
-
-        // Update progress
-        const overallProgress = Math.round(
-          ((sIdx + progress) / totalScenes) * 100
-        );
-        setExportState((prev) =>
-          prev.status === "recording" ? { ...prev, progress: overallProgress } : prev
-        );
-
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, frameInterval);
-        });
+      
+      // Draw the scene
+      if (!(await renderFrames(sceneDurationMs, (p) => drawScene(scene, p, 1)))) {
+        recorder.stop(); audioCtx.close(); return;
+      }
+      
+      // Transition to next scene (if not last)
+      if (sIdx < totalScenes - 1) {
+        const nextScene = s.scenes[sIdx + 1];
+        // Crossfade: draw current scene fading out and next scene fading in
+        const transitionFrames = Math.floor(transitionDurationMs / frameInterval);
+        for (let f = 0; f < transitionFrames; f++) {
+          if (abortRef.current) break;
+          const t = f / transitionFrames;
+          ctx.clearRect(0, 0, 1920, 1080);
+          // Draw fading-out current scene
+          drawScene(scene, 1, 1 - t);
+          // Draw fading-in next scene on top
+          ctx.globalCompositeOperation = "source-over";
+          const nextAlpha = t;
+          // Draw next scene with alpha
+          const nextImg = imageCache.get(nextScene.scene_number);
+          if (nextImg) {
+            ctx.globalAlpha = nextAlpha;
+            ctx.drawImage(nextImg, 0, 0, 1920, 1080);
+            ctx.globalAlpha = 1;
+          }
+          
+          const overallProgress = Math.round((elapsedMs / estimatedTotalMs) * 100);
+          elapsedMs += frameInterval;
+          setExportState((prev) =>
+            prev.status === "recording" ? { ...prev, progress: Math.min(overallProgress, 99) } : prev
+          );
+          
+          await new Promise<void>((resolve) => setTimeout(resolve, frameInterval));
+        }
       }
     }
+    
+    // 3. End Credits
+    if (!abortRef.current) {
+      await renderFrames(creditsDurationMs, drawCredits);
+    }
+
+    setExportState((prev) =>
+      prev.status === "recording" ? { ...prev, progress: 100 } : prev
+    );
 
     if (!abortRef.current) {
       // Hold last frame briefly

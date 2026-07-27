@@ -66,8 +66,6 @@ export function FilmHistory({ onSelect, activeFilmId }: FilmHistoryProps) {
     setFilms(loadFilms());
   }, []);
 
-  const refreshFilms = () => setFilms(loadFilms());
-
   if (films.length === 0) return null;
 
   const sceneImage = (sceneNumber: number) => {

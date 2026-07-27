@@ -5,6 +5,7 @@ import { generateScript } from "~/routes/api/generate-script";
 import type { Script } from "~/routes/api/generate-script";
 import { StoryboardViewer } from "~/components/StoryboardViewer";
 import { AutoFilmPipeline } from "~/components/AutoFilmPipeline";
+import { FilmHistory, type SavedFilm } from "~/components/FilmHistory";
 
 export function DemoSection() {
   const [prompt, setPrompt] = useState("");
@@ -12,12 +13,14 @@ export function DemoSection() {
   const [script, setScript] = useState<Script | null>(null);
   const [error, setError] = useState("");
   const [autoMode, setAutoMode] = useState(false);
+  const [savedFilm, setSavedFilm] = useState<SavedFilm | null>(null);
 
   const handleGenerate = async () => {
     setStatus("loading");
     setError("");
     setScript(null);
     setAutoMode(false);
+    setSavedFilm(null);
 
     try {
       const result = await generateScript({ data: { prompt } });
@@ -27,6 +30,22 @@ export function DemoSection() {
       setError(err?.message || "Something went wrong. Try again.");
       setStatus("error");
     }
+  };
+
+  const handleAutoMode = () => {
+    setAutoMode(true);
+    setError("");
+    setScript(null);
+    setStatus("idle");
+    setSavedFilm(null);
+  };
+
+  const handleSelectFilm = (film: SavedFilm) => {
+    setSavedFilm(film);
+    setAutoMode(true);
+    setError("");
+    setScript(null);
+    setStatus("idle");
   };
 
   const isLoading = status === "loading";
@@ -42,10 +61,9 @@ export function DemoSection() {
           See the <span className="text-gold">magic</span>
         </h2>
         <p className="mt-4 text-gray-400">
-          Click below to generate a cinematic script from{" "}
+          Click below to generate a cinematic short film from{" "}
           <em className="text-gold not-italic">The Odyssey</em> — Odysseus versus the
-          Cyclops, adapted by AI into a full film breakdown. Or type your own story
-          idea.
+          Cyclops, adapted by AI into a full film with orchestral score, voice acting, and video export.
         </p>
       </div>
 
@@ -54,28 +72,20 @@ export function DemoSection() {
         <div className="mx-auto mt-8 max-w-xl text-center">
           <button
             type="button"
-            onClick={() => {
-              setAutoMode(true);
-              setError("");
-              setScript(null);
-              setStatus("idle");
-            }}
+            onClick={handleAutoMode}
             className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-gold via-gold/90 to-gold px-10 py-5 font-heading text-sm font-bold tracking-widest text-navy uppercase shadow-lg shadow-gold/25 transition-all duration-300 hover:shadow-xl hover:shadow-gold/40 hover:scale-[1.02] active:scale-[0.98]"
           >
-            {/* Shimmer effect */}
             <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            {/* Sparkle icon left */}
             <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
             </svg>
             <span className="relative">Generate Full Automatic Film</span>
-            {/* Sparkle icon right */}
             <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
             </svg>
           </button>
           <p className="mt-3 text-xs text-gray-600">
-            One click — script, storyboard, voices, music, and film. No input needed.
+            One click — script, storyboard, orchestral score, voices, and film. No input needed.
           </p>
         </div>
       )}
@@ -85,14 +95,20 @@ export function DemoSection() {
         <AutoFilmPipeline
           onClose={() => {
             setAutoMode(false);
+            setSavedFilm(null);
           }}
+          savedFilm={savedFilm}
         />
       )}
 
-      {/* ── Manual flow below (secondary, for custom prompts) ── */}
+      {/* ── Film History ── */}
+      {!autoMode && status !== "done" && (
+        <FilmHistory onSelect={handleSelectFilm} activeFilmId={savedFilm?.id} />
+      )}
+
+      {/* ── Manual flow below ── */}
       {!autoMode && (
         <>
-          {/* Input + Button */}
           <div className="mx-auto mt-10 max-w-xl">
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
@@ -116,7 +132,7 @@ export function DemoSection() {
                   </>
                 ) : (
                   <>
-                    Generate The Odyssey Demo
+                    Generate Script
                     <svg
                       className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
                       fill="none"
@@ -124,18 +140,13 @@ export function DemoSection() {
                       stroke="currentColor"
                       strokeWidth={2}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </>
                 )}
               </button>
             </div>
 
-            {/* Loading Progress */}
             {isLoading && (
               <div className="mt-6 text-center">
                 <div className="mx-auto h-1 w-full max-w-md overflow-hidden rounded-full bg-gray-800">
@@ -147,7 +158,6 @@ export function DemoSection() {
               </div>
             )}
 
-            {/* Error state */}
             {status === "error" && (
               <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-center text-sm text-red-400">
                 {error}
@@ -155,10 +165,9 @@ export function DemoSection() {
             )}
           </div>
 
-          {/* Script output */}
           {status === "done" && script && (
             <>
-              <ScriptDisplay script={script} onAutoMode={() => { setAutoMode(true); setScript(null); setStatus("idle"); }} />
+              <ScriptDisplay script={script} onAutoMode={handleAutoMode} />
               <StoryboardViewer script={script} />
             </>
           )}
@@ -168,40 +177,19 @@ export function DemoSection() {
   );
 }
 
-/* ── Spinner ── */
-
 function Spinner() {
   return (
-    <svg
-      className="h-4 w-4 animate-spin"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
+    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
   );
 }
 
-/* ── Script Display ── */
-
 function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () => void }) {
   return (
     <div className="mx-auto mt-12 max-w-4xl">
-      {/* Title card */}
       <div className="relative overflow-hidden rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/[0.06] to-transparent p-8 sm:p-12">
-        {/* Decorative accents */}
         <div className="absolute left-0 top-0 h-px w-24 bg-gradient-to-r from-gold/40 to-transparent" />
         <div className="absolute left-0 top-0 h-24 w-px bg-gradient-to-b from-gold/40 to-transparent" />
         <div className="absolute bottom-0 right-0 h-px w-24 bg-gradient-to-l from-gold/40 to-transparent" />
@@ -229,14 +217,12 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
         </p>
       </div>
 
-      {/* Scenes */}
       <div className="mt-8 space-y-6">
         {script.scenes.map((scene) => (
           <div
             key={scene.scene_number}
             className="script-scene-card group rounded-xl border border-gray-800 bg-white/[0.02] p-6 transition-all duration-300 hover:border-gold/20 hover:bg-white/[0.04] sm:p-8"
           >
-            {/* Scene header */}
             <div className="mb-5 flex flex-wrap items-center gap-3">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold/15 font-heading text-sm font-bold text-gold">
                 {scene.scene_number}
@@ -246,7 +232,6 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
               </span>
             </div>
 
-            {/* Visual description */}
             <div className="mb-5">
               <span className="mb-2 block font-heading text-xs font-semibold tracking-widest text-gray-500 uppercase">
                 Visual Description
@@ -256,7 +241,6 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
               </p>
             </div>
 
-            {/* Dialogue */}
             {scene.dialogue.length > 0 && (
               <div className="mb-5">
                 <span className="mb-3 block font-heading text-xs font-semibold tracking-widest text-gray-500 uppercase">
@@ -277,7 +261,6 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
               </div>
             )}
 
-            {/* Cinematic notes */}
             <div>
               <span className="mb-2 block font-heading text-xs font-semibold tracking-widest text-gray-500 uppercase">
                 Cinematic Notes
@@ -290,7 +273,6 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
         ))}
       </div>
 
-      {/* Bottom CTA */}
       <div className="mt-10 text-center">
         <p className="text-sm text-gray-500">
           Prefer the full cinematic experience?{" "}
@@ -299,7 +281,7 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
             onClick={onAutoMode}
             className="text-gold underline decoration-gold/30 underline-offset-4 transition hover:text-gold/80"
           >
-            Generate Full Automatic Film
+            Watch as a Film
           </button>
         </p>
       </div>

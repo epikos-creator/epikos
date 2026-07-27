@@ -62,8 +62,9 @@ function Hero() {
         />
 
         {/* Badge */}
-        <span className="mb-6 inline-block rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
-          Text-to-Movie
+        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
+          <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
+          Live Demo Available
         </span>
 
         {/* Headline */}
@@ -82,10 +83,10 @@ function Hero() {
         {/* CTAs */}
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
           <a
-            href="#waitlist"
+            href="#demo"
             className="group inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30"
           >
-            Join the Waitlist
+            Try the Live Demo
             <svg
               className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
               fill="none"
@@ -97,10 +98,10 @@ function Hero() {
             </svg>
           </a>
           <a
-            href="#demo"
+            href="#waitlist"
             className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-8 py-4 font-heading text-sm font-bold tracking-widest text-gold uppercase transition-all hover:border-gold hover:bg-gold/10"
           >
-            Try the Odyssey Demo
+            Join the Waitlist
           </a>
         </div>
       </div>
@@ -117,7 +118,7 @@ const features = [
   {
     title: "Script Adaptation",
     description:
-      "AI reads your story and crafts a cinematic screenplay, preserving the soul of the original while shaping it for the screen.",
+      "AI reads your story and crafts a cinematic screenplay — try it live with The Odyssey demo above. Preserves the soul of the original while shaping it for the screen.",
     icon: (
       <svg
         className="h-8 w-8 text-gold"
@@ -177,7 +178,7 @@ const features = [
   {
     title: "Music Scoring",
     description:
-      "Original AI-composed scores tailored to your story's mood — epic orchestral, intimate piano, or anything in between.",
+      "Original AI-composed orchestral scores via Web Audio — hear the epic soundtrack in the live demo. Tailored to your story's mood.",
     icon: (
       <svg
         className="h-8 w-8 text-gold"
@@ -202,15 +203,14 @@ function Features() {
       {/* Section header */}
       <div className="mx-auto max-w-2xl text-center">
         <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
-          How It Works
+          Powered by AI — Working Now
         </span>
         <h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">
           One story, one click,{" "}
           <span className="text-gold">one film</span>
         </h2>
         <p className="mt-4 text-gray-400">
-          Four AI-powered pillars that turn any story into a cinematic experience — no
-          crew, no cameras, no compromise.
+          Four AI-powered pillars — all live in the demo above. Script adaptation, scene generation, voice acting, and orchestral scoring turn any story into a cinematic experience.
         </p>
       </div>
 

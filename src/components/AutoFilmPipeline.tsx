@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Script, Scene } from "~/routes/api/generate-script";
 import { generateScript } from "~/routes/api/generate-script";
 import type { VoiceProfile } from "~/routes/api/generate-voiceover";
+import { useBackgroundMusic } from "~/hooks/useBackgroundMusic";
+import { useVideoExport } from "~/hooks/useVideoExport";
+import { saveFilm, type SavedFilm } from "~/components/FilmHistory";
 
 /* ── Pipeline stages ── */
 type PipelineStage =
@@ -35,7 +38,7 @@ const STAGE_DURATIONS: Record<PipelineStage, number> = {
   complete: 0,
 };
 
-/* ── Voice profiles matching existing defaults ── */
+/* ── Voice profiles ── */
 const DEFAULT_VOICE_PROFILES: Record<string, VoiceProfile> = {
   ODYSSEUS: { character: "Odysseus", pitch: 0.85, rate: 0.95, volume: 1.0 },
   POLYPHEMUS: { character: "Polyphemus", pitch: 0.45, rate: 0.75, volume: 1.0 },
@@ -72,34 +75,43 @@ function pickVoice(targetPitch: number): SpeechSynthesisVoice | null {
 /* ── Props ── */
 interface AutoFilmPipelineProps {
   onClose: () => void;
+  savedFilm?: SavedFilm | null;
 }
 
 /* ── Main pipeline ── */
-export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
-  const [stage, setStage] = useState<PipelineStage>("script");
+export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) {
+  const [stage, setStage] = useState<PipelineStage>(savedFilm ? "complete" : "script");
   const [stageProgress, setStageProgress] = useState(0);
-  const [script, setScript] = useState<Script | null>(null);
+  const [script, setScript] = useState<Script | null>(savedFilm ? { title: savedFilm.title, logline: savedFilm.logline, scenes: savedFilm.scenes, duration_estimate: savedFilm.duration_estimate } : null);
   const [error, setError] = useState("");
   const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
-  const [playerState, setPlayerState] = useState<"idle" | "playing" | "paused" | "done">("idle");
+  const [playerState, setPlayerState] = useState<"idle" | "playing" | "paused" | "done">(savedFilm ? "paused" : "idle");
   const [playerLineIdx, setPlayerLineIdx] = useState(-1);
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
-  
+  const [filmSaved, setFilmSaved] = useState(!!savedFilm);
+  const [showVideoExport, setShowVideoExport] = useState(false);
+
   const stageIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const playingRef = useRef(false);
   const pausedRef = useRef(false);
+  const musicInitializedRef = useRef(false);
 
-  /* ── Stage 1: Generate script ── */
+  const bgMusic = useBackgroundMusic();
+  const videoExport = useVideoExport(script);
+
+  /* ── Generate pipeline ── */
   useEffect(() => {
+    if (savedFilm) return; // Skip pipeline for saved films
+
     const state = { cancelled: false };
-    
+
     async function runPipeline() {
       // Stage 1: Script
       setStage("script");
       await simulateProgress("script", state);
       if (state.cancelled) return;
-      
+
       try {
         const result = await generateScript({ data: { prompt: "" } });
         if (state.cancelled) return;
@@ -108,50 +120,60 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
         if (!state.cancelled) setError(err?.message || "Failed to generate script");
         return;
       }
-      
+
       // Stage 2: Visuals
       setStage("visuals");
       await simulateProgress("visuals", state);
       if (state.cancelled) return;
-      
+
       // Stage 3: Voiceovers
       setStage("voiceovers");
       await simulateProgress("voiceovers", state);
       if (state.cancelled) return;
-      
-      // Stage 4: Music
+
+      // Stage 4: Music — now actually composes the score
       setStage("music");
+      bgMusic.start();
+      musicInitializedRef.current = true;
       await simulateProgress("music", state);
-      if (state.cancelled) return;
-      
+      if (state.cancelled) {
+        bgMusic.stop();
+        return;
+      }
+
       // Stage 5: Rendering
       setStage("rendering");
       await simulateProgress("rendering", state);
       if (state.cancelled) return;
-      
+
       // Complete
       setStage("complete");
-      // Small delay before starting auto-play
+      // Save to localStorage
+      if (result && !filmSaved) {
+        saveFilm(result);
+        setFilmSaved(true);
+      }
       await new Promise((r) => setTimeout(r, 600));
       if (!state.cancelled) {
         setPlayerState("playing");
       }
     }
-    
+
     runPipeline();
-    
+
     return () => {
       state.cancelled = true;
       if (stageIntervalRef.current) clearInterval(stageIntervalRef.current);
       if (synthRef.current) synthRef.current.cancel();
+      bgMusic.stop();
     };
-  }, []);
+  }, [savedFilm]);
 
   async function simulateProgress(stageKey: PipelineStage, state: { cancelled: boolean }): Promise<void> {
     const duration = STAGE_DURATIONS[stageKey];
     const steps = 30;
     const interval = duration / steps;
-    
+
     return new Promise((resolve) => {
       let step = 0;
       stageIntervalRef.current = setInterval(() => {
@@ -174,46 +196,51 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
   /* ── Auto-playback ── */
   useEffect(() => {
     if (playerState !== "playing" || !script) return;
-    
+
     playingRef.current = true;
     pausedRef.current = false;
-    
+
+    // Start music for saved films that skip the pipeline
+    if (savedFilm && !musicInitializedRef.current) {
+      bgMusic.start();
+      musicInitializedRef.current = true;
+    } else {
+      bgMusic.resume();
+    }
+
     const scenes = script.scenes;
-    
+
     async function playAllScenes() {
       for (let sIdx = currentSceneIdx; sIdx < scenes.length; sIdx++) {
         if (!playingRef.current) break;
         setCurrentSceneIdx(sIdx);
-        
+
         const scene = scenes[sIdx];
         setPlayerLineIdx(-1);
-        
-        // Brief pause between scenes
+
         if (sIdx > 0) {
           await sleep(800);
         }
         if (!playingRef.current) break;
-        
-        // Play dialogue lines
+
         if (scene.dialogue.length > 0) {
           await playSceneDialogue(scene);
         } else {
-          // No dialogue — just hold the frame
           await sleep(2500);
         }
-        
+
         if (!playingRef.current) break;
         if (pausedRef.current) return;
       }
-      
+
       if (playingRef.current) {
         setPlayerState("done");
         setCurrentSceneIdx(scenes.length - 1);
       }
     }
-    
+
     playAllScenes();
-    
+
     return () => {
       playingRef.current = false;
       if (synthRef.current) synthRef.current.cancel();
@@ -223,43 +250,46 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
   async function playSceneDialogue(scene: Scene): Promise<void> {
     const synth = window.speechSynthesis;
     synthRef.current = synth;
-    
+
     for (let i = 0; i < scene.dialogue.length; i++) {
       if (!playingRef.current) return;
       if (pausedRef.current) return;
-      
+
       const d = scene.dialogue[i];
       setPlayerLineIdx(i);
-      
+
       await new Promise<void>((resolve) => {
         const key = d.character.toUpperCase().trim();
         const profile = DEFAULT_VOICE_PROFILES[key] ?? { character: d.character, pitch: 1.0, rate: 1.0, volume: 1.0 };
-        
+
         const utterance = new SpeechSynthesisUtterance(d.line);
         const voice = pickVoice(profile.pitch);
         if (voice) utterance.voice = voice;
         utterance.pitch = profile.pitch;
         utterance.rate = profile.rate;
         utterance.volume = profile.volume;
-        
+
         utterance.onend = () => resolve();
         utterance.onerror = () => resolve();
-        
+
         synth.speak(utterance);
       });
     }
   }
 
+  /* ── Playback controls ── */
   const handlePlayPause = useCallback(() => {
     if (playerState === "playing") {
       pausedRef.current = true;
       if (synthRef.current) synthRef.current.cancel();
+      bgMusic.pause();
       setPlayerState("paused");
     } else if (playerState === "paused") {
       pausedRef.current = false;
+      bgMusic.resume();
       setPlayerState("playing");
     }
-  }, [playerState]);
+  }, [playerState, bgMusic]);
 
   const handlePrevScene = useCallback(() => {
     if (!script) return;
@@ -302,22 +332,40 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
     pausedRef.current = false;
     setCurrentSceneIdx(0);
     setPlayerLineIdx(-1);
+    bgMusic.resume();
     setTimeout(() => setPlayerState("playing"), 500);
-  }, []);
+  }, [bgMusic]);
+
+  /* ── Cleanup on close ── */
+  const handleClose = useCallback(() => {
+    bgMusic.stop();
+    if (synthRef.current) synthRef.current.cancel();
+    playingRef.current = false;
+    onClose();
+  }, [onClose, bgMusic]);
+
+  /* ── Video Export UI ── */
+  const handleExportVideo = useCallback(() => {
+    if (playerState === "playing") {
+      handlePlayPause(); // Pause first
+    }
+    setShowVideoExport(true);
+  }, [playerState, handlePlayPause]);
+
+  const startVideoExport = useCallback(async () => {
+    await videoExport.exportVideo();
+  }, [videoExport]);
 
   /* ── Pipeline progress UI ── */
   if (stage !== "complete") {
     return (
       <div className="auto-film-pipeline relative mx-auto mt-8 max-w-2xl animate-[storyboard-fade-in_0.4s_ease-out]">
-        {/* Pipeline card */}
         <div className="relative overflow-hidden rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/[0.08] to-navy/80 p-8 sm:p-10 backdrop-blur-sm">
-          {/* Decorative accents */}
           <div className="absolute left-0 top-0 h-px w-24 bg-gradient-to-r from-gold/40 to-transparent" />
           <div className="absolute left-0 top-0 h-24 w-px bg-gradient-to-b from-gold/40 to-transparent" />
           <div className="absolute bottom-0 right-0 h-px w-24 bg-gradient-to-l from-gold/40 to-transparent" />
           <div className="absolute bottom-0 right-0 h-24 w-px bg-gradient-to-t from-gold/40 to-transparent" />
 
-          {/* Title */}
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/15">
               <svg className="h-5 w-5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -338,7 +386,7 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
             <div className="text-center">
               <p className="mb-4 text-sm text-red-400">{error}</p>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="rounded-full border border-gold/40 px-6 py-2.5 font-heading text-xs font-bold tracking-wider text-gold uppercase transition hover:bg-gold/10"
               >
                 Try Again
@@ -346,37 +394,30 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
             </div>
           ) : (
             <>
-              {/* Stage indicator */}
               <div className="mb-3">
                 <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
                   {STAGE_LABELS[stage]}
                 </span>
               </div>
 
-              {/* Cinematic progress bar */}
               <div className="relative h-2 overflow-hidden rounded-full bg-gray-800">
                 <div
                   className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-gold/70 via-gold to-gold/70 animate-pulse"
                   style={{ width: `${Math.round(stageProgress * 100)}%`, transition: "width 0.3s ease-out" }}
                 />
-                {/* Shimmer effect */}
                 <div
                   className="absolute inset-y-0 w-16 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  style={{
-                    left: `${Math.round(stageProgress * 100) - 4}%`,
-                    transition: "left 0.3s ease-out",
-                  }}
+                  style={{ left: `${Math.round(stageProgress * 100) - 4}%`, transition: "left 0.3s ease-out" }}
                 />
               </div>
 
-              {/* Stage dots */}
               <div className="mt-6 flex items-center justify-between">
                 {(["script", "visuals", "voiceovers", "music", "rendering"] as PipelineStage[]).map((s, i) => {
                   const stageOrder = ["script", "visuals", "voiceovers", "music", "rendering"];
                   const currentIdx = stageOrder.indexOf(stage);
                   const isComplete = currentIdx > i;
                   const isCurrent = currentIdx === i;
-                  
+
                   return (
                     <div key={s} className="flex flex-col items-center gap-1.5">
                       <div
@@ -401,14 +442,21 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
                           isCurrent ? "text-gold" : isComplete ? "text-gold/60" : "text-gray-600"
                         }`}
                       >
-                        {s === "script" ? "Script" : s === "visuals" ? "Visuals" : s === "voiceovers" ? "Voices" : s === "music" ? "Music" : "Render"}
+                        {s === "script" ? "Script" : s === "visuals" ? "Visuals" : s === "voiceovers" ? "Voices" : s === "music" ? "Score" : "Render"}
                       </span>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Particle effects - floating particles */}
+              {/* Music stage indicator — now real */}
+              {stage === "music" && (
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gold/60">
+                  <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
+                  Composing epic orchestral score via Web Audio API...
+                </div>
+              )}
+
               <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div
@@ -425,13 +473,6 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
             </>
           )}
         </div>
-
-        <style>{`
-          @keyframes particle-float {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
-            50% { transform: translateY(-8px) translateX(4px); opacity: 0.7; }
-          }
-        `}</style>
       </div>
     );
   }
@@ -447,6 +488,86 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
 
   return (
     <div className="auto-film-player relative mx-auto mt-8 max-w-5xl animate-[storyboard-fade-in_0.5s_ease-out]">
+      {/* ── Video Export Modal ── */}
+      {showVideoExport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-md rounded-2xl border border-gold/20 bg-navy p-8 shadow-2xl shadow-gold/5">
+            <button
+              onClick={() => { setShowVideoExport(false); videoExport.cancelExport(); }}
+              className="absolute right-4 top-4 text-gray-500 hover:text-gold transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h3 className="font-heading text-lg font-bold text-white">Export Film</h3>
+            <p className="mt-2 text-sm text-gray-400">
+              Render all {script.scenes.length} scenes into a cinematic .webm video file with scene transitions and audio.
+            </p>
+
+            {videoExport.exportState.status === "idle" && (
+              <button
+                onClick={startVideoExport}
+                className="mt-6 w-full rounded-full bg-gold px-6 py-3.5 font-heading text-sm font-bold tracking-widest text-navy uppercase transition hover:bg-gold/90"
+              >
+                Start Rendering Video
+              </button>
+            )}
+
+            {videoExport.exportState.status === "recording" && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gold animate-pulse">Rendering frames...</span>
+                  <span className="font-mono text-xs text-gray-400">{videoExport.exportState.progress}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gold transition-all duration-300"
+                    style={{ width: `${videoExport.exportState.progress}%` }}
+                  />
+                </div>
+                <button
+                  onClick={videoExport.cancelExport}
+                  className="mt-4 w-full rounded-full border border-gray-700 px-4 py-2 text-xs text-gray-400 hover:text-white transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {videoExport.exportState.status === "done" && (
+              <div className="mt-6 text-center">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/20 mx-auto">
+                  <svg className="h-7 w-7 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-300">Film rendered successfully!</p>
+                <button
+                  onClick={() => { videoExport.downloadVideo(); setShowVideoExport(false); }}
+                  className="mt-4 w-full rounded-full bg-gold px-6 py-3.5 font-heading text-sm font-bold tracking-widest text-navy uppercase transition hover:bg-gold/90"
+                >
+                  Download .webm Film
+                </button>
+              </div>
+            )}
+
+            {videoExport.exportState.status === "error" && (
+              <div className="mt-6 text-center">
+                <p className="text-sm text-red-400">{videoExport.exportState.error || "Export failed"}</p>
+                <button
+                  onClick={() => setShowVideoExport(false)}
+                  className="mt-4 rounded-full border border-gray-700 px-4 py-2 text-xs text-gray-400"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── Film Player Card ── */}
       <div className="relative overflow-hidden rounded-2xl border border-gold/20 bg-black/40 backdrop-blur-sm">
         {/* Decorative top bar */}
@@ -466,7 +587,6 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
 
         {/* Main screen */}
         <div className="relative aspect-video w-full bg-navy overflow-hidden">
-          {/* Scene image */}
           {!imgErrors.has(currentScene.scene_number) ? (
             <img
               src={sceneImg}
@@ -482,6 +602,16 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
 
           {/* Vignette overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+
+          {/* Music indicator */}
+          {isPlaying && (
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1.5 border border-gold/20">
+              <svg className="h-3 w-3 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
+              </svg>
+              <span className="font-mono text-[9px] text-gold/80 animate-pulse">SCORE</span>
+            </div>
+          )}
 
           {/* Scene info overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -552,13 +682,13 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
                     Replay Film
                   </button>
                   <button
-                    onClick={onClose}
+                    onClick={handleExportVideo}
                     className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-6 py-3 font-heading text-sm font-bold tracking-wider text-gold uppercase transition hover:bg-gold/10"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
-                    Remix / Generate Again
+                    Export Video
                   </button>
                 </div>
               </div>
@@ -568,7 +698,6 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
 
         {/* Controls bar */}
         <div className="flex items-center gap-3 border-t border-gold/10 px-4 py-3">
-          {/* Play/Pause */}
           <button
             onClick={handlePlayPause}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gold transition hover:bg-gold/10"
@@ -586,31 +715,26 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
             )}
           </button>
 
-          {/* Prev scene */}
           <button
             onClick={handlePrevScene}
             disabled={currentSceneIdx === 0}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:text-gold hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Previous Scene"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 5.25l-8.25 6.75L21 18.75M3 5.25v13.5" />
             </svg>
           </button>
 
-          {/* Next scene */}
           <button
             onClick={handleNextScene}
             disabled={currentSceneIdx >= script.scenes.length - 1}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:text-gold hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Next Scene"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 5.25l8.25 6.75L3 18.75M21 5.25v13.5" />
             </svg>
           </button>
 
-          {/* Scene progress */}
           <div className="flex-1 mx-2">
             <div className="flex items-center gap-2">
               <span className="font-mono text-[10px] text-gray-500">
@@ -623,7 +747,6 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
                 />
               </div>
             </div>
-            {/* Scene dots */}
             <div className="mt-1.5 flex justify-center gap-1">
               {script.scenes.map((_, i) => (
                 <button
@@ -649,7 +772,6 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
             </div>
           </div>
 
-          {/* Status */}
           <span className={`font-mono text-[10px] ${
             isPlaying ? "text-gold animate-pulse" : isDone ? "text-gold/60" : "text-gray-500"
           }`}>
@@ -663,12 +785,22 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
             <svg className="h-3 w-3 text-gold/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
             </svg>
-            AI-generated score &bull; Web Speech voices
+            Web Audio orchestral score &bull; Web Speech voices
           </div>
           <div className="flex items-center gap-2">
+            {/* Export Video button */}
+            <button
+              onClick={handleExportVideo}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-4 py-2 font-heading text-[10px] font-bold tracking-wider text-gold uppercase transition hover:bg-gold/25"
+            >
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Video
+            </button>
+            {/* Download script button */}
             <button
               onClick={() => {
-                // Download: create a text export of the script
                 const text = script.scenes.map((s) =>
                   `SCENE ${s.scene_number}: ${s.location}\n${s.visual_description}\n\n` +
                   s.dialogue.map((d) => `${d.character}: "${d.line}"`).join("\n") +
@@ -685,30 +817,34 @@ export function AutoFilmPipeline({ onClose }: AutoFilmPipelineProps) {
               className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 px-4 py-2 font-heading text-[10px] font-bold tracking-wider text-gold uppercase transition hover:bg-gold/10"
             >
               <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
-              Download Film
+              Script
             </button>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="inline-flex items-center gap-1.5 rounded-full bg-gold/10 px-4 py-2 font-heading text-[10px] font-bold tracking-wider text-gold uppercase transition hover:bg-gold/20"
             >
               <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
               </svg>
-              Remix / Generate Again
+              New Film
             </button>
           </div>
         </div>
       </div>
 
-      {/* Inline style for particle animations */}
-      <style>{`
-        @keyframes particle-float {
-          0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
-          50% { transform: translateY(-8px) translateX(4px); opacity: 0.7; }
-        }
-      `}</style>
+      {/* Saved indicator */}
+      {filmSaved && (
+        <div className="mt-3 text-center">
+          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-gold/50">
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            Saved to your library
+          </span>
+        </div>
+      )}
     </div>
   );
 }

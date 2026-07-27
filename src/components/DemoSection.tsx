@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { generateScript } from "~/routes/api/generate-script";
 import type { Script } from "~/routes/api/generate-script";
+import { StoryboardViewer } from "~/components/StoryboardViewer";
 
 export function DemoSection() {
   const [prompt, setPrompt] = useState("");
@@ -109,7 +110,12 @@ export function DemoSection() {
       </div>
 
       {/* Script output */}
-      {status === "done" && script && <ScriptDisplay script={script} />}
+      {status === "done" && script && (
+        <>
+          <ScriptDisplay script={script} />
+          <StoryboardViewer script={script} />
+        </>
+      )}
     </section>
   );
 }
@@ -180,7 +186,7 @@ function ScriptDisplay({ script }: { script: Script }) {
         {script.scenes.map((scene) => (
           <div
             key={scene.scene_number}
-            className="group rounded-xl border border-gray-800 bg-white/[0.02] p-6 transition-all duration-300 hover:border-gold/20 hover:bg-white/[0.04] sm:p-8"
+            className="script-scene-card group rounded-xl border border-gray-800 bg-white/[0.02] p-6 transition-all duration-300 hover:border-gold/20 hover:bg-white/[0.04] sm:p-8"
           >
             {/* Scene header */}
             <div className="mb-5 flex flex-wrap items-center gap-3">

@@ -23,3 +23,137 @@
     font-family: "Cinzel", serif;
   }
 }
+
+/* ── Storyboard cinematic animations ── */
+
+@keyframes reel-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes storyboard-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sprocket-march {
+  0%   { background-position: 0 0; }
+  100% { background-position: 12px 0; }
+}
+
+.storyboard-wrapper {
+  animation: storyboard-fade-in 0.6s ease-out both;
+  animation-delay: 0.2s;
+}
+
+.storyboard-card {
+  animation: storyboard-fade-in 0.5s ease-out both;
+}
+
+.storyboard-card:nth-child(1) { animation-delay: 0.30s; }
+.storyboard-card:nth-child(2) { animation-delay: 0.35s; }
+.storyboard-card:nth-child(3) { animation-delay: 0.40s; }
+.storyboard-card:nth-child(4) { animation-delay: 0.45s; }
+.storyboard-card:nth-child(5) { animation-delay: 0.50s; }
+.storyboard-card:nth-child(6) { animation-delay: 0.55s; }
+.storyboard-card:nth-child(7) { animation-delay: 0.60s; }
+.storyboard-card:nth-child(8) { animation-delay: 0.65s; }
+
+/* Film reel shimmer on hover */
+.storyboard-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(209, 169, 92, 0.04),
+    transparent
+  );
+  z-index: 5;
+  pointer-events: none;
+  transition: left 0.6s ease;
+}
+
+.storyboard-card:hover::before {
+  left: 120%;
+}
+
+/* Sprocket dots subtle pulsing */
+.sprocket-dot {
+  opacity: 0.25;
+  transition: opacity 0.3s;
+}
+
+.storyboard-card:hover .sprocket-dot {
+  opacity: 0.45;
+}
+
+/* ── Script display cinematic polish ── */
+
+@keyframes script-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.script-scene-card {
+  animation: script-reveal 0.4s ease-out both;
+}
+.script-scene-card:nth-child(1) { animation-delay: 0.05s; }
+.script-scene-card:nth-child(2) { animation-delay: 0.10s; }
+.script-scene-card:nth-child(3) { animation-delay: 0.15s; }
+.script-scene-card:nth-child(4) { animation-delay: 0.20s; }
+.script-scene-card:nth-child(5) { animation-delay: 0.25s; }
+.script-scene-card:nth-child(6) { animation-delay: 0.30s; }
+.script-scene-card:nth-child(7) { animation-delay: 0.35s; }
+.script-scene-card:nth-child(8) { animation-delay: 0.40s; }
+
+/* ── Voiceover waveform animations ── */
+
+@keyframes waveform-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-waveform-pulse {
+  animation: waveform-pulse 0.6s ease-in-out infinite;
+}
+
+/* Voiceover generating shimmer */
+@keyframes voice-generate-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Global page background subtle texture ── */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ── Auto Film Pipeline shimmer animation ── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}

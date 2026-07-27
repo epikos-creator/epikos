@@ -4,17 +4,20 @@ import { useState } from "react";
 import { generateScript } from "~/routes/api/generate-script";
 import type { Script } from "~/routes/api/generate-script";
 import { StoryboardViewer } from "~/components/StoryboardViewer";
+import { AutoFilmPipeline } from "~/components/AutoFilmPipeline";
 
 export function DemoSection() {
   const [prompt, setPrompt] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [script, setScript] = useState<Script | null>(null);
   const [error, setError] = useState("");
+  const [autoMode, setAutoMode] = useState(false);
 
   const handleGenerate = async () => {
     setStatus("loading");
     setError("");
     setScript(null);
+    setAutoMode(false);
 
     try {
       const result = await generateScript({ data: { prompt } });
@@ -46,74 +49,119 @@ export function DemoSection() {
         </p>
       </div>
 
-      {/* Input + Button */}
-      <div className="mx-auto mt-10 max-w-xl">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            type="text"
-            placeholder="Try your own prompt or leave empty for The Odyssey..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            disabled={isLoading}
-            className="flex-1 rounded-full border border-gray-700 bg-white/10 px-5 py-3.5 text-white placeholder-gray-500 outline-none transition focus:border-gold focus:ring-1 focus:ring-gold disabled:opacity-50"
-          />
+      {/* ── Auto Film Pipeline Button ── */}
+      {!autoMode && status !== "done" && (
+        <div className="mx-auto mt-8 max-w-xl text-center">
           <button
             type="button"
-            disabled={isLoading}
-            onClick={handleGenerate}
-            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-heading text-sm font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => {
+              setAutoMode(true);
+              setError("");
+              setScript(null);
+              setStatus("idle");
+            }}
+            className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-gold via-gold/90 to-gold px-10 py-5 font-heading text-sm font-bold tracking-widest text-navy uppercase shadow-lg shadow-gold/25 transition-all duration-300 hover:shadow-xl hover:shadow-gold/40 hover:scale-[1.02] active:scale-[0.98]"
           >
-            {isLoading ? (
-              <>
-                <Spinner />
-                Generating...
-              </>
-            ) : (
-              <>
-                Generate The Odyssey Demo
-                <svg
-                  className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </>
-            )}
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            {/* Sparkle icon left */}
+            <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+            </svg>
+            <span className="relative">Generate Full Automatic Film</span>
+            {/* Sparkle icon right */}
+            <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+            </svg>
           </button>
+          <p className="mt-3 text-xs text-gray-600">
+            One click — script, storyboard, voices, music, and film. No input needed.
+          </p>
         </div>
+      )}
 
-        {/* Loading Progress */}
-        {isLoading && (
-          <div className="mt-6 text-center">
-            <div className="mx-auto h-1 w-full max-w-md overflow-hidden rounded-full bg-gray-800">
-              <div className="h-full animate-pulse rounded-full bg-gold/60" style={{ width: "60%" }} />
-            </div>
-            <p className="mt-3 text-sm text-gray-400">
-              Adapting story into cinematic script...
-            </p>
-          </div>
-        )}
+      {/* ── Auto Film Pipeline ── */}
+      {autoMode && (
+        <AutoFilmPipeline
+          onClose={() => {
+            setAutoMode(false);
+          }}
+        />
+      )}
 
-        {/* Error state */}
-        {status === "error" && (
-          <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-center text-sm text-red-400">
-            {error}
-          </div>
-        )}
-      </div>
-
-      {/* Script output */}
-      {status === "done" && script && (
+      {/* ── Manual flow below (secondary, for custom prompts) ── */}
+      {!autoMode && (
         <>
-          <ScriptDisplay script={script} />
-          <StoryboardViewer script={script} />
+          {/* Input + Button */}
+          <div className="mx-auto mt-10 max-w-xl">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                placeholder="Try your own prompt or leave empty for The Odyssey..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                disabled={isLoading}
+                className="flex-1 rounded-full border border-gray-700 bg-white/10 px-5 py-3.5 text-white placeholder-gray-500 outline-none transition focus:border-gold focus:ring-1 focus:ring-gold disabled:opacity-50"
+              />
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleGenerate}
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-gold px-8 py-3.5 font-heading text-sm font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <>
+                    <Spinner />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    Generate The Odyssey Demo
+                    <svg
+                      className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Loading Progress */}
+            {isLoading && (
+              <div className="mt-6 text-center">
+                <div className="mx-auto h-1 w-full max-w-md overflow-hidden rounded-full bg-gray-800">
+                  <div className="h-full animate-pulse rounded-full bg-gold/60" style={{ width: "60%" }} />
+                </div>
+                <p className="mt-3 text-sm text-gray-400">
+                  Adapting story into cinematic script...
+                </p>
+              </div>
+            )}
+
+            {/* Error state */}
+            {status === "error" && (
+              <div className="mt-6 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-center text-sm text-red-400">
+                {error}
+              </div>
+            )}
+          </div>
+
+          {/* Script output */}
+          {status === "done" && script && (
+            <>
+              <ScriptDisplay script={script} onAutoMode={() => { setAutoMode(true); setScript(null); setStatus("idle"); }} />
+              <StoryboardViewer script={script} />
+            </>
+          )}
         </>
       )}
     </section>
@@ -148,7 +196,7 @@ function Spinner() {
 
 /* ── Script Display ── */
 
-function ScriptDisplay({ script }: { script: Script }) {
+function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () => void }) {
   return (
     <div className="mx-auto mt-12 max-w-4xl">
       {/* Title card */}
@@ -245,8 +293,14 @@ function ScriptDisplay({ script }: { script: Script }) {
       {/* Bottom CTA */}
       <div className="mt-10 text-center">
         <p className="text-sm text-gray-500">
-          This is Phase 1 — script adaptation. Future phases will add scene generation,
-          voice acting, and music scoring.
+          Prefer the full cinematic experience?{" "}
+          <button
+            type="button"
+            onClick={onAutoMode}
+            className="text-gold underline decoration-gold/30 underline-offset-4 transition hover:text-gold/80"
+          >
+            Generate Full Automatic Film
+          </button>
         </p>
       </div>
     </div>

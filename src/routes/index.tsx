@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { WaitlistForm } from "~/components/WaitlistForm";
+import { DemoSection } from "~/components/DemoSection";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -13,6 +14,9 @@ function Home() {
 
       {/* ── Features ── */}
       <Features />
+
+      {/* ── Demo ── */}
+      <DemoSection />
 
       {/* ── Pricing ── */}
       <Pricing />
@@ -93,7 +97,7 @@ function Hero() {
             </svg>
           </a>
           <a
-            href="#features"
+            href="#demo"
             className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-8 py-4 font-heading text-sm font-bold tracking-widest text-gold uppercase transition-all hover:border-gold hover:bg-gold/10"
           >
             Try the Odyssey Demo

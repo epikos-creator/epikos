@@ -1,6 +1,6 @@
 # Epikos 🎬
 
-**AI-powered text-to-film platform — now publicly available.**
+**AI-powered text-to-film platform — free demo available now.**
 
 Epikos transforms any story — classic epics, novels, scripts, or original ideas — into a fully-produced short film. It handles script adaptation, scene generation, voice acting, and music scoring in one go. Think "text-to-movie."
 
@@ -8,7 +8,7 @@ The flagship demo adapts *The Odyssey*, but the platform is open to all stories.
 
 ## 🚀 Launch Status
 
-**Epikos AI Film Generator is now live!** Generate your first short film for free at [epikos.ctonew.app](https://33464bead194f0fc7151109baa2e9b19.ctonew.app).
+**Epikos AI Film Generator is live as a free demo.** Generate your first short film for free at [epikos.ctonew.app](https://33464bead194f0fc7151109baa2e9b19.ctonew.app).
 
 ### What's Live
 - ✅ Automatic film pipeline: script → storyboard → voiceover → music → export
@@ -17,9 +17,15 @@ The flagship demo adapts *The Odyssey*, but the platform is open to all stories.
 - ✅ Multi-character voice acting via browser Speech Synthesis
 - ✅ Video export as .webm (canvas-rendered)
 - ✅ Film history (localStorage persistence)
-- ✅ Shareable film links
-- ✅ Free tier (1 film/24h) + Stripe subscriptions (Creator £15/mo, Studio £50/mo)
+- ✅ Shareable film links (same device/browser only)
+- ✅ Free tier (1 film/24h)
 - ✅ Rate limiting (free tier enforcement)
+
+### What's Coming (Paid Beta)
+- ⏳ Stripe subscriptions — Creator £15/mo, Studio £50/mo
+- ⏳ Cross-device film sharing (server-side storage)
+- ⏳ Higher resolution exports (1080p, 4K)
+- ⏳ Commercial license
 
 ## Tech Stack
 
@@ -27,7 +33,7 @@ The flagship demo adapts *The Odyssey*, but the platform is open to all stories.
 - **Styling:** Tailwind CSS
 - **Fonts:** Cinzel (headings), Inter (body)
 - **Database:** Neon Postgres (for waitlist)
-- **Payments:** Stripe (payment links live)
+- **Payments:** Stripe (payment links — not yet active; waitlist-only during beta)
 - **Audio:** Web Audio API (dynamic orchestral synthesis)
 - **Voice:** Browser Speech Synthesis API
 
@@ -59,6 +65,7 @@ src/
 ## Roadmap
 
 - [ ] Real Stripe webhook integration
+- [ ] Server-side film storage for cross-device sharing
 - [ ] User accounts & auth
 - [ ] Custom story upload
 - [ ] AI image generation for scenes

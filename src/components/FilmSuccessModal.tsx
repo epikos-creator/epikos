@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import type { Script } from "~/server/generate-script";
-import { STRIPE_LINKS } from "~/hooks/useSubscription";
 
 interface FilmSuccessModalProps {
   script: Script;
@@ -12,7 +11,10 @@ interface FilmSuccessModalProps {
 
 /**
  * Success/launch modal shown after the first film is generated.
- * Includes social sharing buttons and a strong call to upgrade.
+ * Includes social sharing buttons and an honest note about paid plans.
+ *
+ * HOTFIX: Paid plans are disabled — upgrade CTA now points to waitlist.
+ * Sharing is same-device only (localStorage-based).
  */
 export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalProps) {
   const [copied, setCopied] = useState(false);
@@ -158,9 +160,12 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
               Link copied!
             </p>
           )}
+          <p className="mt-2 text-center text-[10px] text-gray-600">
+            ⚠️ Film links only work on this device/browser — cross-device sharing coming soon.
+          </p>
         </div>
 
-        {/* Upgrade CTA (only for free users) */}
+        {/* Upgrade CTA (only for free users) — waitlist, not Stripe */}
         {!isPaid && (
           <div className="mt-6 rounded-xl border border-gold/20 bg-gold/[0.05] p-5">
             <div className="flex items-center gap-3 mb-3">
@@ -172,26 +177,14 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
               </p>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              Upgrade to unlock unlimited films, remove watermarks, and get 1080p or 4K exports.
+              Paid plans are coming soon — unlock unlimited films, remove watermarks, and get 1080p or 4K exports.
             </p>
-            <div className="flex gap-3">
-              <a
-                href={STRIPE_LINKS.creator}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 rounded-full bg-gold px-4 py-2.5 text-center font-heading text-xs font-bold tracking-wider text-navy uppercase transition hover:bg-gold/90"
-              >
-                Creator £15/mo
-              </a>
-              <a
-                href={STRIPE_LINKS.studio}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 rounded-full border border-gold/40 px-4 py-2.5 text-center font-heading text-xs font-bold tracking-wider text-gold uppercase transition hover:bg-gold/10"
-              >
-                Studio £50/mo
-              </a>
-            </div>
+            <a
+              href="#waitlist"
+              className="block w-full rounded-full bg-gold px-4 py-2.5 text-center font-heading text-xs font-bold tracking-wider text-navy uppercase transition hover:bg-gold/90"
+            >
+              Join Paid Beta Waitlist
+            </a>
           </div>
         )}
 

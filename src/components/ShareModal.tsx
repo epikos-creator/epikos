@@ -90,7 +90,10 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
           Share This Film
         </h3>
         <p className="mt-2 text-center text-sm text-gray-400">
-          Anyone with this link can view your film without generating it again.
+          Copy this link to reopen your film later on this device.
+        </p>
+        <p className="mt-1 text-center text-[11px] text-amber-400/70">
+          ⚠️ Links only work on this browser/device — cross-device sharing is not yet supported.
         </p>
 
         {/* Share URL */}
@@ -116,7 +119,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
         )}
 
         <p className="mt-5 text-center text-[11px] text-gray-600">
-          Shared films are stored locally and expire after browser data is cleared.
+          Films are stored in this browser's local storage — they will not be accessible from other devices or after clearing browser data. Cross-device sharing is coming in a future update.
         </p>
       </div>
     </div>

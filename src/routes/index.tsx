@@ -300,7 +300,7 @@ const plans = [
       "Priority rendering",
     ],
     highlight: true,
-    href: "https://buy.stripe.com/4gM14n3hw6Na0ojdap5AQ00",
+    href: "#waitlist",
   },
   {
     name: "Studio",
@@ -316,7 +316,7 @@ const plans = [
       "Early access to new features",
     ],
     highlight: false,
-    href: "https://buy.stripe.com/bJebJ119o2wU1sn1rH5AQ01",
+    href: "#waitlist",
   },
 ];
 
@@ -334,6 +334,9 @@ function Pricing() {
         </h2>
         <p className="mt-4 text-gray-400">
           No hidden fees. Upgrade or downgrade anytime.
+        </p>
+        <p className="mt-2 text-xs text-amber-400/70">
+          Paid plans (Creator &amp; Studio) are coming soon — join the waitlist below for early access.
         </p>
       </div>
 
@@ -396,7 +399,7 @@ function Pricing() {
                   : "border border-gold text-gold hover:bg-gold/10"
               }`}
             >
-              {plan.highlight ? "Subscribe Now" : plan.name === "Free" ? "Get Started" : "Subscribe Now"}
+              {plan.highlight ? "Join Waitlist" : plan.name === "Free" ? "Get Started" : "Coming Soon"}
             </a>
           </div>
         ))}

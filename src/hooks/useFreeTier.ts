@@ -26,7 +26,11 @@ export function getFreeTierState(): FreeTierState {
     const today = getTodayKey();
     // Reset counter if it's a new day
     if (state.dateKey !== today) {
-      const reset: FreeTierState = { lastGeneratedAt: state.lastGeneratedAt, filmsGeneratedToday: 0, dateKey: today };
+      const reset: FreeTierState = {
+        lastGeneratedAt: state.lastGeneratedAt,
+        filmsGeneratedToday: 0,
+        dateKey: today,
+      };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(reset));
       return reset;
     }
@@ -44,16 +48,26 @@ export function recordFreeFilmGeneration(): void {
   state.dateKey = getTodayKey();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
-export function canGenerateFreeFilm(): { allowed: boolean; reason?: string; remainingCooldown?: number } {
+/**
+ * Check if user can generate a film under the free tier.
+ *
+ * HOTFIX: Always enforces free-tier rules. The previous code
+ * had a bug where it checked `localStorage.getItem("epikos_subscription") === "active"`
+ * — but the stored value is JSON, so that string comparison always failed.
+ * Since paid subscriptions are disabled for launch integrity (no server-side
+ * webhook verification), we simply always enforce the 1-film/24h limit.
+ */
+export function canGenerateFreeFilm(): {
+  allowed: boolean;
+  reason?: string;
+  remainingCooldown?: number;
+} {
   const state = getFreeTierState();
-
-  // If subscribed (mock check via localStorage flag), always allowed
-  if (typeof window !== "undefined" && localStorage.getItem("epikos_subscription") === "active") {
-    return { allowed: true };
-  }
 
   if (state.filmsGeneratedToday >= 1) {
     // Check if 24h cooldown has passed since last generation

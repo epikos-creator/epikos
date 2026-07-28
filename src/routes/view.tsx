@@ -26,7 +26,7 @@ function SharedFilmView() {
     try {
       const raw = localStorage.getItem(storageKey);
       if (!raw) {
-        setError("Film not found. It may have expired or the link is invalid.");
+        setError("Film not found. It may have expired, been cleared, or you're on a different device/browser than the one that created it. Sharing is currently same-device only.");
         setLoading(false);
         return;
       }
@@ -76,9 +76,21 @@ function SharedFilmView() {
             <img src="/logo.png" alt="Epikos" className="h-8 w-8" />
             <span className="font-heading text-sm font-bold tracking-[0.15em] text-gold uppercase">Epikos</span>
           </a>
-          <span className="font-mono text-[10px] text-gray-500">Shared Film</span>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline font-mono text-[10px] text-amber-400/60">
+              Same-device only
+            </span>
+            <span className="font-mono text-[10px] text-gray-500">Shared Film</span>
+          </div>
         </div>
       </header>
+
+      {/* Same-device notice banner */}
+      <div className="border-b border-amber-400/10 bg-amber-400/[0.03] px-6 py-2.5">
+        <p className="text-center text-[11px] text-amber-400/70">
+          ⚠️ This film was shared from another browser on this device. Links don't work across devices yet — cross-device sharing is coming soon.
+        </p>
+      </div>
 
       {/* Film Content */}
       <main className="mx-auto max-w-4xl px-6 py-12">

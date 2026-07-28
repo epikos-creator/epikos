@@ -1,6 +1,5 @@
 "use client";
 
-import { STRIPE_LINKS } from "~/hooks/useSubscription";
 import { formatCooldown } from "~/hooks/useFreeTier";
 
 interface UpgradePromptProps {
@@ -47,71 +46,67 @@ export function UpgradePrompt({ onClose, reason, remainingCooldown }: UpgradePro
         )}
 
         <p className="mt-5 text-center text-sm text-gray-300">
-          Unlock unlimited films, higher quality, and commercial rights.
+          Paid plans are coming soon — unlock unlimited films, higher quality, and commercial rights.
         </p>
 
-        {/* Plans */}
+        {/* Plans preview (no payment links) */}
         <div className="mt-6 grid grid-cols-2 gap-4">
-          {/* Creator */}
-          <a
-            href={STRIPE_LINKS.creator}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={onClose}
-            className="flex flex-col items-center rounded-xl border border-gold/30 bg-gold/[0.06] p-5 text-center transition-all hover:border-gold hover:bg-gold/[0.12]"
-          >
+          {/* Creator — coming soon */}
+          <div className="flex flex-col items-center rounded-xl border border-gold/20 bg-gold/[0.04] p-5 text-center opacity-90">
             <span className="font-heading text-sm font-bold text-gold">Creator</span>
             <span className="mt-1 font-heading text-3xl font-bold text-white">£15</span>
             <span className="text-xs text-gray-400">/month</span>
             <ul className="mt-3 space-y-1.5 text-left">
               {["10 films/month", "1080p · No watermark", "Priority rendering"].map((f) => (
-                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-300">
-                  <svg className="h-3 w-3 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                  <svg className="h-3 w-3 shrink-0 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                   {f}
                 </li>
               ))}
             </ul>
-            <span className="mt-4 inline-block rounded-full bg-gold px-5 py-2 font-heading text-[10px] font-bold tracking-wider text-navy uppercase">
-              Subscribe
+            <span className="mt-4 inline-block rounded-full border border-gold/30 px-5 py-2 font-heading text-[10px] font-bold tracking-wider text-gold/70 uppercase">
+              Coming Soon
             </span>
-          </a>
+          </div>
 
-          {/* Studio */}
-          <a
-            href={STRIPE_LINKS.studio}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={onClose}
-            className="flex flex-col items-center rounded-xl border border-gold/30 bg-gold/[0.06] p-5 text-center transition-all hover:border-gold hover:bg-gold/[0.12]"
-          >
+          {/* Studio — coming soon */}
+          <div className="flex flex-col items-center rounded-xl border border-gold/20 bg-gold/[0.04] p-5 text-center opacity-90">
             <span className="font-heading text-sm font-bold text-gold">Studio</span>
             <span className="mt-1 font-heading text-3xl font-bold text-white">£50</span>
             <span className="text-xs text-gray-400">/month</span>
             <ul className="mt-3 space-y-1.5 text-left">
               {["Unlimited films", "4K · Commercial license", "Early access"].map((f) => (
-                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-300">
-                  <svg className="h-3 w-3 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                  <svg className="h-3 w-3 shrink-0 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                   {f}
                 </li>
               ))}
             </ul>
-            <span className="mt-4 inline-block rounded-full bg-gold px-5 py-2 font-heading text-[10px] font-bold tracking-wider text-navy uppercase">
-              Subscribe
+            <span className="mt-4 inline-block rounded-full border border-gold/30 px-5 py-2 font-heading text-[10px] font-bold tracking-wider text-gold/70 uppercase">
+              Coming Soon
             </span>
-          </a>
+          </div>
         </div>
 
         <p className="mt-5 text-center text-[11px] text-gray-600">
-          After subscribing, refresh the page to unlock your plan.{" "}
+          Want early access?{" "}
+          <a
+            href="#waitlist"
+            onClick={onClose}
+            className="text-gold underline decoration-gold/20 underline-offset-4 hover:text-gold/80"
+          >
+            Join the paid beta waitlist
+          </a>
+          {" "}or{" "}
           <button
             onClick={onClose}
             className="text-gold underline decoration-gold/20 underline-offset-4 hover:text-gold/80"
           >
-            Maybe later
+            stay on free
           </button>
         </p>
       </div>

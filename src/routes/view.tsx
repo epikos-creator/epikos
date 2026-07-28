@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import type { Script } from "~/routes/api/generate-script";
+import type { Script } from "~/server/generate-script";
 
 export const Route = createFileRoute("/view")({
   component: SharedFilmView,

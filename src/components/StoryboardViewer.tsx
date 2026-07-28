@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import type { Script, Scene } from "~/routes/api/generate-script";
+import type { Script, Scene } from "~/server/generate-script";
 import { useVoiceover } from "~/hooks/useVoiceover";
-import type { VoiceProfile } from "~/routes/api/generate-voiceover";
+import type { VoiceProfile } from "~/server/generate-voiceover";
 
 interface StoryboardViewerProps {
   script: Script;

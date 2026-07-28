@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { submitWaitlist } from "~/routes/api/waitlist";
+import { submitWaitlist } from "~/server/waitlist";
 
 type Status = "idle" | "loading" | "success" | "error";
 

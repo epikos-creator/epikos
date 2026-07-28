@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Script } from "~/routes/api/generate-script";
+import type { Script } from "~/server/generate-script";
 
 export interface SavedFilm {
   id: string;

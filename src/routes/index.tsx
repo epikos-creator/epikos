@@ -9,6 +9,9 @@ export const Route = createFileRoute("/")({
 function Home() {
   return (
     <div className="min-h-dvh bg-navy text-white font-body">
+      {/* ── Launch Announcement Banner ── */}
+      <LaunchBanner />
+
       {/* ── Hero ── */}
       <Hero />
 
@@ -26,6 +29,23 @@ function Home() {
 
       {/* ── Footer ── */}
       <Footer />
+    </div>
+  );
+}
+
+/* ──────────────── Launch Announcement Banner ──────────────── */
+
+function LaunchBanner() {
+  return (
+    <div className="bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 border-b border-gold/20">
+      <div className="mx-auto max-w-5xl px-6 py-3 text-center">
+        <p className="font-heading text-xs sm:text-sm font-semibold tracking-[0.1em] text-gold">
+          🎬 <span className="uppercase">Now Live</span> — Epikos AI Film Generator is publicly available!{" "}
+          <a href="#demo" className="underline decoration-gold/30 underline-offset-4 hover:text-white transition-colors">
+            Try the free demo →
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

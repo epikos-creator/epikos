@@ -200,7 +200,7 @@ export function useVoiceover({
   const generate = useCallback(async () => {
     setState("generating");
     // Import the server function dynamically to avoid SSR issues
-    const { generateVoiceover } = await import("~/routes/api/generate-voiceover");
+    const { generateVoiceover } = await import("~/server/generate-voiceover");
     const scene = {
       scene_number: 0,
       location: "",

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { Script, Scene } from "~/routes/api/generate-script";
-import { generateScript } from "~/routes/api/generate-script";
-import type { VoiceProfile } from "~/routes/api/generate-voiceover";
-import { useBackgroundMusic } from "~/hooks/useBackgroundMusic";
+import type { Script, Scene } from "~/server/generate-script";
+import { generateScript } from "~/server/generate-script";
+import type { VoiceProfile } from "~/server/generate-voiceover";
+import { useBackgroundMusic, detectEmotion, type MusicEmotion } from "~/hooks/useBackgroundMusic";
 import { useVideoExport } from "~/hooks/useVideoExport";
 import { saveFilm, type SavedFilm } from "~/components/FilmHistory";
 import { canGenerateFreeFilm, recordFreeFilmGeneration } from "~/hooks/useFreeTier";
@@ -12,6 +12,7 @@ import { useSubscription } from "~/hooks/useSubscription";
 import { useAnalytics } from "~/hooks/useAnalytics";
 import { UpgradePrompt } from "~/components/UpgradePrompt";
 import { ShareModal } from "~/components/ShareModal";
+import { FilmSuccessModal } from "~/components/FilmSuccessModal";
 
 /* ── Pipeline stages ── */
 type PipelineStage =
@@ -97,6 +98,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
   const [showVideoExport, setShowVideoExport] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [freeTierBlocked, setFreeTierBlocked] = useState(false);
   const [transitionScene, setTransitionScene] = useState<{ from: number; to: number } | null>(null);
 
@@ -189,6 +191,8 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
       await new Promise((r) => setTimeout(r, 600));
       if (!state.cancelled) {
         setPlayerState("titleCard");
+        // Show success modal after a short delay (let title card play first)
+        setTimeout(() => setShowSuccess(true), 2000);
       }
     }
 
@@ -642,6 +646,15 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
         <ShareModal
           script={script}
           onClose={() => setShowShare(false)}
+        />
+      )}
+
+      {/* ── Success / Launch Modal ── */}
+      {showSuccess && script && (
+        <FilmSuccessModal
+          script={script}
+          onClose={() => setShowSuccess(false)}
+          isPaid={isPaid}
         />
       )}
 

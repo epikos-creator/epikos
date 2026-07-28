@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useCallback, useState } from "react";
-import type { Script, Scene } from "~/routes/api/generate-script";
+import type { Script, Scene } from "~/server/generate-script";
 
 interface VideoExportState {
   status: "idle" | "recording" | "processing" | "done" | "error";

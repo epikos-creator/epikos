@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { generateScript } from "~/routes/api/generate-script";
-import type { Script } from "~/routes/api/generate-script";
+import { generateScript } from "~/server/generate-script";
+import type { Script } from "~/server/generate-script";
 import { StoryboardViewer } from "~/components/StoryboardViewer";
 import { AutoFilmPipeline } from "~/components/AutoFilmPipeline";
 import { FilmHistory, type SavedFilm } from "~/components/FilmHistory";

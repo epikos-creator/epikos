@@ -8,7 +8,7 @@ import { neon } from "@neondatabase/serverless";
  * still builds and serves before a database is connected — the error only
  * surfaces if a query actually runs without `DATABASE_URL`.
  *
- * Use it only inside a `createServerFn()` handler or an `src/routes/api/*` route
+ * Use it only inside a `createServerFn()` handler or an `src/server/*` route
  * (never client code):
  *
  *   const getPosts = createServerFn().handler(async () => {

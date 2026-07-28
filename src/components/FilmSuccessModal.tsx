@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { createSharedFilm } from "~/server/share-film";
 import type { Script } from "~/server/generate-script";
 
 interface FilmSuccessModalProps {
@@ -11,32 +12,36 @@ interface FilmSuccessModalProps {
 
 /**
  * Success/launch modal shown after the first film is generated.
- * Includes social sharing buttons and an honest note about paid plans.
- *
- * HOTFIX: Paid plans are disabled — upgrade CTA now points to waitlist.
- * Sharing is same-device only (localStorage-based).
+ * Creates a server-persisted share link (cross-device) and displays
+ * social sharing buttons.
  */
 export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalProps) {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
 
-  // Generate share URL on mount
-  useState(() => {
-    const filmData = {
-      title: script.title,
-      logline: script.logline,
-      scenes: script.scenes,
-      duration_estimate: script.duration_estimate,
-    };
-    const json = JSON.stringify(filmData);
-    const hash = btoa(encodeURIComponent(json));
-    try {
-      localStorage.setItem(`epikos_shared_${hash.slice(0, 16)}`, json);
-    } catch { /* ignore */ }
-    setShareUrl(`${window.location.origin}/view?f=${hash.slice(0, 32)}`);
-  });
+  // Create the shared film on mount
+  useEffect(() => {
+    let cancelled = false;
+
+    async function create() {
+      try {
+        const result = await createSharedFilm({ data: script });
+        if (cancelled) return;
+        setShareUrl(`${window.location.origin}/view?f=${result.shareId}`);
+      } catch {
+        // Best effort — if server-side save fails, the share link just won't work
+        if (!cancelled) {
+          setShareUrl(`${window.location.origin}`);
+        }
+      }
+    }
+
+    create();
+    return () => { cancelled = true; };
+  }, [script]);
 
   const handleCopyLink = useCallback(async () => {
+    if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -160,9 +165,6 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
               Link copied!
             </p>
           )}
-          <p className="mt-2 text-center text-[10px] text-gray-600">
-            ⚠️ Film links only work on this device/browser — cross-device sharing coming soon.
-          </p>
         </div>
 
         {/* Upgrade CTA (only for free users) — waitlist, not Stripe */}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { createSharedFilm } from "~/server/share-film";
 import type { Script } from "~/server/generate-script";
 
 interface ShareModalProps {
@@ -9,51 +10,48 @@ interface ShareModalProps {
 }
 
 /**
- * Generates a shareable link by storing film data in localStorage
- * and creating a hash-based URL that another user can load.
+ * Generates a shareable link by persisting film data server-side (Neon)
+ * and creating a URL that works across devices/browsers.
  */
 export function ShareModal({ script, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(true);
 
-  const generateShareLink = useCallback(() => {
-    // Create a simple hash from the script data
-    const filmData = {
-      title: script.title,
-      logline: script.logline,
-      scenes: script.scenes,
-      duration_estimate: script.duration_estimate,
-    };
-    const json = JSON.stringify(filmData);
-    const hash = btoa(encodeURIComponent(json));
+  // Create the shared film on mount
+  useEffect(() => {
+    let cancelled = false;
 
-    // Store in localStorage for retrieval by /view route
-    try {
-      localStorage.setItem(`epikos_shared_${hash.slice(0, 16)}`, json);
-    } catch {
-      // If storage is full, try clearing old shared films
-      const keys = Object.keys(localStorage).filter((k) => k.startsWith("epikos_shared_"));
-      keys.slice(0, keys.length - 5).forEach((k) => localStorage.removeItem(k));
+    async function create() {
       try {
-        localStorage.setItem(`epikos_shared_${hash.slice(0, 16)}`, json);
-      } catch { /* best effort */ }
+        const result = await createSharedFilm({ data: script });
+        if (cancelled) return;
+        const url = `${window.location.origin}/view?f=${result.shareId}`;
+        setShareUrl(url);
+        setGenerating(false);
+      } catch (err: unknown) {
+        if (cancelled) return;
+        const msg = err instanceof Error ? err.message : "Failed to create share link";
+        setError(msg);
+        setGenerating(false);
+      }
     }
 
-    const url = `${window.location.origin}/view?f=${hash.slice(0, 32)}`;
-    setShareUrl(url);
-    return url;
+    create();
+    return () => { cancelled = true; };
   }, [script]);
 
   const handleCopy = useCallback(async () => {
-    const url = shareUrl || generateShareLink();
+    if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
       // Fallback
       const input = document.createElement("input");
-      input.value = url;
+      input.value = shareUrl;
       document.body.appendChild(input);
       input.select();
       document.execCommand("copy");
@@ -61,12 +59,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
-  }, [shareUrl, generateShareLink]);
-
-  // Auto-generate on mount
-  if (!shareUrl) {
-    generateShareLink();
-  }
+  }, [shareUrl]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -90,36 +83,58 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
           Share This Film
         </h3>
         <p className="mt-2 text-center text-sm text-gray-400">
-          Copy this link to reopen your film later on this device.
+          Copy this link to share your film — it works on any device.
         </p>
-        <p className="mt-1 text-center text-[11px] text-amber-400/70">
-          ⚠️ Links only work on this browser/device — cross-device sharing is not yet supported.
-        </p>
+
+        {/* Loading state */}
+        {generating && (
+          <div className="mt-5 flex items-center justify-center gap-2 py-3">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+            <span className="text-xs text-gray-400">Generating share link...</span>
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div className="mt-5 rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-center">
+            <p className="text-sm text-red-400">{error}</p>
+            <button
+              onClick={onClose}
+              className="mt-3 text-xs text-gray-400 hover:text-white transition"
+            >
+              Close
+            </button>
+          </div>
+        )}
 
         {/* Share URL */}
-        <div className="mt-5 flex items-center gap-2 rounded-xl border border-gray-700 bg-black/30 p-3">
-          <input
-            type="text"
-            readOnly
-            value={shareUrl || "Generating link..."}
-            className="flex-1 bg-transparent font-mono text-xs text-gray-300 outline-none"
-          />
-          <button
-            onClick={handleCopy}
-            className="shrink-0 rounded-lg bg-gold/15 px-4 py-2 font-heading text-[10px] font-bold tracking-wider text-gold uppercase transition hover:bg-gold/25"
-          >
-            {copied ? "Copied!" : "Copy"}
-          </button>
-        </div>
+        {shareUrl && (
+          <>
+            <div className="mt-5 flex items-center gap-2 rounded-xl border border-gray-700 bg-black/30 p-3">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="flex-1 bg-transparent font-mono text-xs text-gray-300 outline-none"
+              />
+              <button
+                onClick={handleCopy}
+                className="shrink-0 rounded-lg bg-gold/15 px-4 py-2 font-heading text-[10px] font-bold tracking-wider text-gold uppercase transition hover:bg-gold/25"
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
 
-        {copied && (
-          <p className="mt-3 text-center text-xs text-green-400 animate-pulse">
-            Link copied to clipboard!
-          </p>
+            {copied && (
+              <p className="mt-3 text-center text-xs text-green-400 animate-pulse">
+                Link copied to clipboard!
+              </p>
+            )}
+          </>
         )}
 
         <p className="mt-5 text-center text-[11px] text-gray-600">
-          Films are stored in this browser's local storage — they will not be accessible from other devices or after clearing browser data. Cross-device sharing is coming in a future update.
+          Anyone with this link can view the film. Shared films are stored on the server and work across all devices.
         </p>
       </div>
     </div>

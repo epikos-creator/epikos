@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import type { Script } from "~/server/generate-script";
+import { getSharedFilm } from "~/server/share-film";
+import type { Script } from "~/server/share-film";
 
 export const Route = createFileRoute("/view")({
   component: SharedFilmView,
@@ -15,27 +16,34 @@ function SharedFilmView() {
     if (typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
-    const hash = params.get("f");
-    if (!hash) {
-      setError("No film ID provided.");
+    const shareId = params.get("f");
+    if (!shareId) {
+      setError("No film ID provided. Use a share link from the Epikos film player.");
       setLoading(false);
       return;
     }
 
-    const storageKey = `epikos_shared_${hash.slice(0, 16)}`;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (!raw) {
-        setError("Film not found. It may have expired, been cleared, or you're on a different device/browser than the one that created it. Sharing is currently same-device only.");
-        setLoading(false);
-        return;
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const result = await getSharedFilm({ data: { shareId } });
+        if (cancelled) return;
+        if (result.found && result.film) {
+          setFilm(result.film);
+        } else {
+          setError("Film not found. The link may have expired or the film was removed.");
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Film not found. The link may have expired or the film was removed.");
+        }
       }
-      const data = JSON.parse(raw);
-      setFilm(data);
-    } catch {
-      setError("Failed to load film data.");
+      if (!cancelled) setLoading(false);
     }
-    setLoading(false);
+
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   if (loading) {
@@ -76,21 +84,9 @@ function SharedFilmView() {
             <img src="/logo.png" alt="Epikos" className="h-8 w-8" />
             <span className="font-heading text-sm font-bold tracking-[0.15em] text-gold uppercase">Epikos</span>
           </a>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline font-mono text-[10px] text-amber-400/60">
-              Same-device only
-            </span>
-            <span className="font-mono text-[10px] text-gray-500">Shared Film</span>
-          </div>
+          <span className="font-mono text-[10px] text-gray-500">Shared Film</span>
         </div>
       </header>
-
-      {/* Same-device notice banner */}
-      <div className="border-b border-amber-400/10 bg-amber-400/[0.03] px-6 py-2.5">
-        <p className="text-center text-[11px] text-amber-400/70">
-          ⚠️ This film was shared from another browser on this device. Links don't work across devices yet — cross-device sharing is coming soon.
-        </p>
-      </div>
 
       {/* Film Content */}
       <main className="mx-auto max-w-4xl px-6 py-12">

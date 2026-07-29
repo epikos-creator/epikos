@@ -7,7 +7,7 @@ import type { VoiceProfile } from "~/server/generate-voiceover";
 import { useBackgroundMusic, detectEmotion, type MusicEmotion } from "~/hooks/useBackgroundMusic";
 import { useVideoExport } from "~/hooks/useVideoExport";
 import { saveFilm, type SavedFilm } from "~/components/FilmHistory";
-import { canGenerateFreeFilm, recordFreeFilmGeneration } from "~/hooks/useFreeTier";
+import { canGenerateFreeFilm, recordFreeFilmGeneration, checkFreeTierLimit, recordFreeTierUsage } from "~/hooks/useFreeTier";
 import { useSubscription } from "~/hooks/useSubscription";
 import { useAnalytics } from "~/hooks/useAnalytics";
 import { UpgradePrompt } from "~/components/UpgradePrompt";
@@ -121,14 +121,28 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
     const state = { cancelled: false };
 
     async function runPipeline() {
-      // Check free tier limit
+      // Check free tier limit — client first (instant), then server (authoritative)
       if (!isPaid) {
-        const check = canGenerateFreeFilm();
-        if (!check.allowed) {
+        const clientCheck = canGenerateFreeFilm();
+        if (!clientCheck.allowed) {
           setFreeTierBlocked(true);
           setShowUpgrade(true);
-          track("free_tier_blocked", "film", { reason: check.reason || "limit_reached" });
+          track("free_tier_blocked", "film", { reason: clientCheck.reason || "limit_reached" });
           return;
+        }
+
+        // Server-side check (authoritative — overrides client)
+        try {
+          const serverCheck = await checkFreeTierLimit();
+          if (!serverCheck.allowed) {
+            setFreeTierBlocked(true);
+            setShowUpgrade(true);
+            track("free_tier_blocked", "film", { reason: serverCheck.reason || "server_limit_reached" });
+            return;
+          }
+        } catch {
+          // If server check fails, fall through (permissive) — the client check already passed
+          console.warn("Free tier server check unavailable — relying on client check");
         }
       }
 
@@ -176,9 +190,13 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
       // Complete
       setStage("complete");
-      // Record free tier usage
+      // Record free tier usage — both client (optimistic) and server (authoritative)
       if (!isPaid) {
         recordFreeFilmGeneration();
+        recordFreeTierUsage().catch(() => {
+          // Non-blocking — server recording failure shouldn't affect UX
+          console.warn("Failed to record server-side free tier usage");
+        });
         track("film_generated_free", "film", { scenes: generatedScript?.scenes.length ?? 0 });
       } else {
         track("film_generated_paid", "film", { scenes: generatedScript?.scenes.length ?? 0 });

@@ -56,11 +56,9 @@ export function recordFreeFilmGeneration(): void {
 /**
  * Check if user can generate a film under the free tier.
  *
- * HOTFIX: Always enforces free-tier rules. The previous code
- * had a bug where it checked `localStorage.getItem("epikos_subscription") === "active"`
- * — but the stored value is JSON, so that string comparison always failed.
- * Since paid subscriptions are disabled for launch integrity (no server-side
- * webhook verification), we simply always enforce the 1-film/24h limit.
+ * This is the **client-side optimistic check** (localStorage-based).
+ * For server-side enforcement, use `checkFreeTierLimitServer()` which
+ * calls the server function — the server result overrides this one.
  */
 export function canGenerateFreeFilm(): {
   allowed: boolean;
@@ -93,3 +91,8 @@ export function formatCooldown(ms: number): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 }
+
+// ── Server-side enforcement ──
+
+export { checkFreeTierLimit } from "~/server/free-tier";
+export { recordFreeTierUsage } from "~/server/free-tier";

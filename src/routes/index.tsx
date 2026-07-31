@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   return (
-    <div className="min-h-dvh bg-navy text-white font-body">
+    <div id="top" className="min-h-dvh bg-navy text-white font-body">
       {/* ── Sticky Navigation ── */}
       <Navigation />
 

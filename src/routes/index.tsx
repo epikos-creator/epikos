@@ -114,8 +114,7 @@ function Hero() {
 
         {/* Headline */}
         <h1 className="max-w-4xl font-heading text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          Transform your story{" "}
-          <span className="text-gold">into a short film</span>
+          Turn any written story into a fully narrated cinematic short film using AI.
         </h1>
 
         {/* Subheadline */}

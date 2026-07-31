@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { generateScript } from "~/server/generate-script";
 import type { Script } from "~/server/generate-script";
 import { StoryboardViewer } from "~/components/StoryboardViewer";
@@ -14,6 +14,39 @@ export function DemoSection() {
   const [error, setError] = useState("");
   const [autoMode, setAutoMode] = useState(false);
   const [savedFilm, setSavedFilm] = useState<SavedFilm | null>(null);
+
+  const ODESSEY_PRESET_PROMPT =
+    "Adapt the Cyclops episode from Homer's Odyssey — Odysseus and his men trapped in Polyphemus's cave, the escape under the sheep, the curse that follows. Dark, tense, cinematic.";
+
+  const presetTriggeredRef = useRef(false);
+
+  // Detect "Watch the Odyssey" hero button click via URL hash
+  useEffect(() => {
+    const checkHash = () => {
+      if (typeof window !== "undefined" && !presetTriggeredRef.current) {
+        const hash = window.location.hash;
+        if (hash.includes("preset=odyssey")) {
+          presetTriggeredRef.current = true;
+          window.location.hash = "demo"; // clean up hash
+          setPrompt(ODESSEY_PRESET_PROMPT);
+          setAutoMode(true);
+          setError("");
+          setScript(null);
+          setStatus("idle");
+          setSavedFilm(null);
+        }
+      }
+    };
+
+    checkHash(); // check on mount
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, []);
+
+  const handleOdysseyPreset = () => {
+    setPrompt(ODESSEY_PRESET_PROMPT);
+    handleAutoMode();
+  };
 
   const handleGenerate = async () => {
     setStatus("loading");
@@ -55,37 +88,41 @@ export function DemoSection() {
       {/* Section header */}
       <div className="mx-auto max-w-2xl text-center">
         <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
-          Live Demo
+          Featured Demo
         </span>
         <h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">
           See the <span className="text-gold">magic</span>
         </h2>
-        <p className="mt-4 text-gray-400">
-          Click below to generate a cinematic short film from{" "}
-          <em className="text-gold not-italic">The Odyssey</em> — Odysseus versus the
-          Cyclops, adapted by AI into a full film with orchestral score, voice acting, and video export.
+        <p className="mt-2 font-heading text-lg font-semibold text-gold/80">
+          Featured Demo: The Odyssey
+        </p>
+        <p className="mt-3 text-gray-400">
+          Watch Homer's epic come alive — from Odysseus facing the Cyclops to a full
+          cinematic short film with orchestral score and voice acting. One click, fully
+          automatic.
         </p>
       </div>
 
-      {/* ── Auto Film Pipeline Button ── */}
+      {/* ── Odyssey Preset Pill ── */}
       {!autoMode && status !== "done" && (
-        <div className="mx-auto mt-8 max-w-xl text-center">
+        <div className="mx-auto mt-10 max-w-xl text-center">
           <button
             type="button"
-            onClick={handleAutoMode}
+            onClick={handleOdysseyPreset}
             className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-gold via-gold/90 to-gold px-10 py-5 font-heading text-sm font-bold tracking-widest text-navy uppercase shadow-lg shadow-gold/25 transition-all duration-300 hover:shadow-xl hover:shadow-gold/40 hover:scale-[1.02] active:scale-[0.98]"
           >
             <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
             </svg>
-            <span className="relative">Generate Full Automatic Film</span>
+            <span className="relative">Watch The Odyssey: Cyclops</span>
             <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
             </svg>
           </button>
           <p className="mt-3 text-xs text-gray-600">
-            One click — script, storyboard, orchestral score, voices, and film. No input needed.
+            One click — Homer's epic transformed into a full cinematic film with orchestral score and voice acting.
           </p>
         </div>
       )}
@@ -113,7 +150,7 @@ export function DemoSection() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="text"
-                placeholder="Try your own prompt or leave empty for The Odyssey..."
+                placeholder="Or write your own story — any epic, novel, or original idea..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 disabled={isLoading}

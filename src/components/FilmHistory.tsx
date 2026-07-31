@@ -80,7 +80,7 @@ export function FilmHistory({ onSelect, activeFilmId }: FilmHistoryProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <h3 className="font-heading text-sm font-semibold tracking-[0.15em] text-gold/80 uppercase">
-          Previous Films
+          See What Others Have Created
         </h3>
       </div>
 

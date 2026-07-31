@@ -66,7 +66,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
       <div className="relative w-full max-w-md rounded-2xl border border-gold/20 bg-navy p-8 shadow-2xl shadow-gold/5 animate-[modal-slide-up_0.3s_ease-out]">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-500 hover:text-gold transition-colors"
+          className="absolute right-4 top-4 text-gray-300 hover:text-gold transition-colors"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -82,7 +82,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
         <h3 className="text-center font-heading text-xl font-bold text-white">
           Share This Film
         </h3>
-        <p className="mt-2 text-center text-sm text-gray-400">
+        <p className="mt-2 text-center text-sm text-gray-300">
           Copy this link to share your film — it works on any device.
         </p>
 
@@ -90,7 +90,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
         {generating && (
           <div className="mt-5 flex items-center justify-center gap-2 py-3">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-            <span className="text-xs text-gray-400">Generating share link...</span>
+            <span className="text-xs text-gray-300">Generating share link...</span>
           </div>
         )}
 
@@ -100,7 +100,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
             <p className="text-sm text-red-400">{error}</p>
             <button
               onClick={onClose}
-              className="mt-3 text-xs text-gray-400 hover:text-white transition"
+              className="mt-3 text-xs text-gray-300 hover:text-white transition"
             >
               Close
             </button>
@@ -133,7 +133,7 @@ export function ShareModal({ script, onClose }: ShareModalProps) {
           </>
         )}
 
-        <p className="mt-5 text-center text-[11px] text-gray-600">
+        <p className="mt-5 text-center text-[11px] text-gray-300">
           Anyone with this link can view the film. Shared films are stored on the server and work across all devices.
         </p>
       </div>

@@ -108,7 +108,7 @@ export function StoryboardViewer({ script }: StoryboardViewerProps) {
             <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
               Visual Storyboard
             </span>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-300">
               {script.scenes.length} scenes &bull; Phase 2 visuals + Phase 3 voice
             </p>
           </div>
@@ -154,7 +154,7 @@ export function StoryboardViewer({ script }: StoryboardViewerProps) {
             <button
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-700 text-gray-400 transition-all hover:border-gold/50 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-700 text-gray-300 transition-all hover:border-gold/50 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Scroll left"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -164,7 +164,7 @@ export function StoryboardViewer({ script }: StoryboardViewerProps) {
             <button
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-700 text-gray-400 transition-all hover:border-gold/50 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-700 text-gray-300 transition-all hover:border-gold/50 hover:text-gold disabled:opacity-30 disabled:cursor-not-allowed"
               aria-label="Scroll right"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -203,7 +203,7 @@ export function StoryboardViewer({ script }: StoryboardViewerProps) {
       </div>
 
       {/* ── Bottom info ── */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-300">
         <span>
           🎬 Phase 3 live — voiceover playback via Web Speech API
           {allGenerated && " | All scenes voiced"}
@@ -403,7 +403,7 @@ function StoryboardCard({ scene, isGenerated, isGlobalPlaying, onPlayingChange }
           </span>
 
           {/* Scene description */}
-          <p className="mt-1.5 text-xs leading-relaxed text-gray-400 line-clamp-2">
+          <p className="mt-1.5 text-xs leading-relaxed text-gray-300 line-clamp-2">
             {shortDesc(scene.visual_description)}
           </p>
 
@@ -477,7 +477,7 @@ function StoryboardCard({ scene, isGenerated, isGlobalPlaying, onPlayingChange }
             <span className={`text-[10px] transition-colors ${
               state === "playing" ? "text-gold/70" :
               state === "done" ? "text-gold/50" :
-              "text-gray-600"
+              "text-gray-300"
             }`}>
               {state === "generating" ? "Generating..." :
                state === "playing" ? "Speaking..." :

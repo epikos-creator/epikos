@@ -96,7 +96,7 @@ export function DemoSection() {
         <p className="mt-2 font-heading text-lg font-semibold text-gold/80">
           Featured Demo: The Odyssey
         </p>
-        <p className="mt-3 text-gray-400">
+        <p className="mt-3 text-gray-300">
           Watch Homer's epic come alive — from Odysseus facing the Cyclops to a full
           cinematic short film with orchestral score and voice acting. One click, fully
           automatic.
@@ -121,7 +121,7 @@ export function DemoSection() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
             </svg>
           </button>
-          <p className="mt-3 text-xs text-gray-600">
+          <p className="mt-3 text-xs text-gray-300">
             One click — Homer's epic transformed into a full cinematic film with orchestral score and voice acting.
           </p>
         </div>
@@ -189,7 +189,7 @@ export function DemoSection() {
                 <div className="mx-auto h-1 w-full max-w-md overflow-hidden rounded-full bg-gray-800">
                   <div className="h-full animate-pulse rounded-full bg-gold/60" style={{ width: "60%" }} />
                 </div>
-                <p className="mt-3 text-sm text-gray-400">
+                <p className="mt-3 text-sm text-gray-300">
                   Adapting story into cinematic script...
                 </p>
               </div>
@@ -270,7 +270,7 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
             </div>
 
             <div className="mb-5">
-              <span className="mb-2 block font-heading text-xs font-semibold tracking-widest text-gray-500 uppercase">
+              <span className="mb-2 block font-heading text-xs font-semibold tracking-widest text-gray-300 uppercase">
                 Visual Description
               </span>
               <p className="text-sm leading-relaxed text-gray-300">
@@ -280,7 +280,7 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
 
             {scene.dialogue.length > 0 && (
               <div className="mb-5">
-                <span className="mb-3 block font-heading text-xs font-semibold tracking-widest text-gray-500 uppercase">
+                <span className="mb-3 block font-heading text-xs font-semibold tracking-widest text-gray-300 uppercase">
                   Dialogue
                 </span>
                 <div className="space-y-3 rounded-lg bg-navy/50 p-4">
@@ -299,10 +299,10 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
             )}
 
             <div>
-              <span className="mb-2 block font-heading text-xs font-semibold tracking-widest text-gray-500 uppercase">
+              <span className="mb-2 block font-heading text-xs font-semibold tracking-widest text-gray-300 uppercase">
                 Cinematic Notes
               </span>
-              <p className="text-xs leading-relaxed text-gray-500">
+              <p className="text-xs leading-relaxed text-gray-300">
                 {scene.cinematic_notes}
               </p>
             </div>
@@ -311,7 +311,7 @@ function ScriptDisplay({ script, onAutoMode }: { script: Script; onAutoMode: () 
       </div>
 
       <div className="mt-10 text-center">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-300">
           Prefer the full cinematic experience?{" "}
           <button
             type="button"

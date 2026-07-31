@@ -119,14 +119,14 @@ export function FilmHistory({ onSelect, activeFilmId }: FilmHistoryProps) {
               <h4 className="font-heading text-sm font-bold text-white truncate">
                 {film.title}
               </h4>
-              <p className="mt-1 text-[11px] leading-relaxed text-gray-400 line-clamp-2">
+              <p className="mt-1 text-[11px] leading-relaxed text-gray-300 line-clamp-2">
                 {film.logline}
               </p>
               <div className="mt-3 flex items-center justify-between">
-                <span className="font-mono text-[10px] text-gray-500">
+                <span className="font-mono text-[10px] text-gray-300">
                   {film.scenes.length} scenes · {film.duration_estimate}
                 </span>
-                <span className="font-mono text-[10px] text-gray-600">
+                <span className="font-mono text-[10px] text-gray-300">
                   {new Date(film.createdAt).toLocaleDateString()}
                 </span>
               </div>

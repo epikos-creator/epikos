@@ -457,7 +457,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
               <h3 className="font-heading text-lg font-bold text-white">
                 {error ? "Pipeline Error" : "Automatic Film Generation"}
               </h3>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-300">
                 {error ? error : "AI-powered pipeline — sit back and watch the magic"}
               </p>
             </div>
@@ -507,7 +507,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
                             ? "bg-gold text-navy"
                             : isCurrent
                               ? "bg-gold/30 text-gold ring-2 ring-gold/50"
-                              : "bg-gray-800 text-gray-600"
+                              : "bg-gray-800 text-gray-300"
                         }`}
                       >
                         {isComplete ? (
@@ -520,7 +520,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
                       </div>
                       <span
                         className={`hidden text-[9px] font-semibold tracking-wider uppercase sm:block ${
-                          isCurrent ? "text-gold" : isComplete ? "text-gold/60" : "text-gray-600"
+                          isCurrent ? "text-gold" : isComplete ? "text-gold/60" : "text-gray-300"
                         }`}
                       >
                         {s === "script" ? "Script" : s === "visuals" ? "Visuals" : s === "voiceovers" ? "Voices" : s === "music" ? "Score" : "Render"}
@@ -577,7 +577,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
           <div className="relative w-full max-w-md rounded-2xl border border-gold/20 bg-navy p-8 shadow-2xl shadow-gold/5">
             <button
               onClick={() => { setShowVideoExport(false); videoExport.cancelExport(); }}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gold transition-colors"
+              className="absolute right-4 top-4 text-gray-300 hover:text-gold transition-colors"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -585,7 +585,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
             </button>
 
             <h3 className="font-heading text-lg font-bold text-white">Export Film</h3>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-gray-300">
               Render all {script.scenes.length} scenes into a cinematic .webm video file with scene transitions and audio.
             </p>
 
@@ -602,7 +602,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gold animate-pulse">Rendering frames...</span>
-                  <span className="font-mono text-xs text-gray-400">{videoExport.exportState.progress}%</span>
+                  <span className="font-mono text-xs text-gray-300">{videoExport.exportState.progress}%</span>
                 </div>
                 <div className="h-2 rounded-full bg-gray-800 overflow-hidden">
                   <div
@@ -612,7 +612,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
                 </div>
                 <button
                   onClick={videoExport.cancelExport}
-                  className="mt-4 w-full rounded-full border border-gray-700 px-4 py-2 text-xs text-gray-400 hover:text-white transition"
+                  className="mt-4 w-full rounded-full border border-gray-700 px-4 py-2 text-xs text-gray-300 hover:text-white transition"
                 >
                   Cancel
                 </button>
@@ -641,7 +641,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
                 <p className="text-sm text-red-400">{videoExport.exportState.error || "Export failed"}</p>
                 <button
                   onClick={() => setShowVideoExport(false)}
-                  className="mt-4 rounded-full border border-gray-700 px-4 py-2 text-xs text-gray-400"
+                  className="mt-4 rounded-full border border-gray-700 px-4 py-2 text-xs text-gray-300"
                 >
                   Close
                 </button>
@@ -690,7 +690,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
               Epikos Player — {script.title}
             </span>
           </div>
-          <span className="font-mono text-[10px] text-gray-500">{script.duration_estimate}</span>
+          <span className="font-mono text-[10px] text-gray-300">{script.duration_estimate}</span>
         </div>
 
         {/* Main screen */}
@@ -719,7 +719,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
               <h3 className="mt-4 font-heading text-2xl font-bold text-gold animate-[storyboard-fade-in_0.6s_ease-out_0.6s_both] sm:text-3xl">
                 {script.title}
               </h3>
-              <p className="mt-6 max-w-md text-center text-sm italic text-gray-400 px-6 animate-[storyboard-fade-in_0.6s_ease-out_0.8s_both]">
+              <p className="mt-6 max-w-md text-center text-sm italic text-gray-300 px-6 animate-[storyboard-fade-in_0.6s_ease-out_0.8s_both]">
                 {script.logline}
               </p>
             </div>
@@ -732,24 +732,24 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
                 <img src="/logo.png" alt="Epikos" className="mx-auto mb-4 h-12 w-12 opacity-60" />
                 <p className="font-heading text-xs font-semibold tracking-[0.2em] text-gold/60 uppercase">An Epikos Production</p>
                 <h3 className="mt-4 font-heading text-2xl font-bold text-white">{script.title}</h3>
-                <p className="mt-1 text-sm text-gray-400">Adapted from The Odyssey by Homer</p>
+                <p className="mt-1 text-sm text-gray-300">Adapted from The Odyssey by Homer</p>
               </div>
               <div className="mt-8 w-full max-w-sm space-y-3 text-center animate-[storyboard-fade-in_0.6s_ease-out_0.5s_both]">
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
                 <p className="font-heading text-[10px] font-semibold tracking-[0.2em] text-gold/70 uppercase">Cast &amp; Crew</p>
-                <div className="space-y-1.5 text-xs text-gray-400">
+                <div className="space-y-1.5 text-xs text-gray-300">
                   <p>Odysseus — AI Voice Synthesis</p>
                   <p>Polyphemus — AI Voice Synthesis</p>
                   <p>Original Score — Web Audio Orchestra</p>
                   <p>Directed by — Artificial Intelligence</p>
                 </div>
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
-                <p className="mt-4 text-[11px] text-gray-500">
+                <p className="mt-4 text-[11px] text-gray-300">
                   Created with{" "}
                   <span className="text-gold font-heading font-semibold tracking-wider">EPIKOS</span>
                   {" "}— AI-Powered Filmmaking
                 </p>
-                <p className="text-[10px] text-gray-600">{script.scenes.length} scenes · {script.duration_estimate}</p>
+                <p className="text-[10px] text-gray-300">{script.scenes.length} scenes · {script.duration_estimate}</p>
               </div>
             </div>
           )}
@@ -850,7 +850,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
                 </div>
                 <div>
                   <h4 className="font-heading text-xl font-bold text-white">Film Complete</h4>
-                  <p className="mt-1 text-sm text-gray-400">
+                  <p className="mt-1 text-sm text-gray-300">
                     {script.scenes.length} scenes &bull; {script.duration_estimate}
                   </p>
                 </div>
@@ -901,7 +901,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
           <button
             onClick={handlePrevScene}
             disabled={currentSceneIdx === 0}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:text-gold hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-300 transition hover:text-gold hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 5.25l-8.25 6.75L21 18.75M3 5.25v13.5" />
@@ -911,7 +911,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
           <button
             onClick={handleNextScene}
             disabled={currentSceneIdx >= script.scenes.length - 1}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:text-gold hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-300 transition hover:text-gold hover:bg-gold/10 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 5.25l8.25 6.75L3 18.75M21 5.25v13.5" />
@@ -920,7 +920,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
           <div className="flex-1 mx-2">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] text-gray-500">
+              <span className="font-mono text-[10px] text-gray-300">
                 Scene {currentScene.scene_number}/{script.scenes.length}
               </span>
               <div className="flex-1 h-1.5 rounded-full bg-gray-800 overflow-hidden">
@@ -956,7 +956,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
           </div>
 
           <span className={`font-mono text-[10px] ${
-            isPlaying ? "text-gold animate-pulse" : isDone ? "text-gold/60" : isTitleCard ? "text-gold/80" : isCredits ? "text-gold/60" : "text-gray-500"
+            isPlaying ? "text-gold animate-pulse" : isDone ? "text-gold/60" : isTitleCard ? "text-gold/80" : isCredits ? "text-gold/60" : "text-gray-300"
           }`}>
             {isPlaying ? "▶ LIVE" : isPaused ? "⏸ PAUSED" : isTitleCard ? "🎬 TITLE" : isCredits ? "★ CREDITS" : isDone ? "✓ DONE" : ""}
           </span>
@@ -964,7 +964,7 @@ export function AutoFilmPipeline({ onClose, savedFilm }: AutoFilmPipelineProps) 
 
         {/* Bottom action bar */}
         <div className="flex items-center justify-between border-t border-gold/10 px-4 py-3">
-          <div className="flex items-center gap-2 text-[10px] text-gray-500">
+          <div className="flex items-center gap-2 text-[10px] text-gray-300">
             <svg className="h-3 w-3 text-gold/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
             </svg>

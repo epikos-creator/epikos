@@ -15,7 +15,7 @@ export function UpgradePrompt({ onClose, reason, remainingCooldown }: UpgradePro
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-500 hover:text-gold transition-colors"
+          className="absolute right-4 top-4 text-gray-300 hover:text-gold transition-colors"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -34,7 +34,7 @@ export function UpgradePrompt({ onClose, reason, remainingCooldown }: UpgradePro
         </h3>
 
         {reason && (
-          <p className="mt-3 text-center text-sm text-gray-400">
+          <p className="mt-3 text-center text-sm text-gray-300">
             {reason}
           </p>
         )}
@@ -55,10 +55,10 @@ export function UpgradePrompt({ onClose, reason, remainingCooldown }: UpgradePro
           <div className="flex flex-col items-center rounded-xl border border-gold/20 bg-gold/[0.04] p-5 text-center opacity-90">
             <span className="font-heading text-sm font-bold text-gold">Creator</span>
             <span className="mt-1 font-heading text-3xl font-bold text-white">£15</span>
-            <span className="text-xs text-gray-400">/month</span>
+            <span className="text-xs text-gray-300">/month</span>
             <ul className="mt-3 space-y-1.5 text-left">
               {["10 films/month", "1080p · No watermark", "Priority rendering"].map((f) => (
-                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-300">
                   <svg className="h-3 w-3 shrink-0 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
@@ -75,10 +75,10 @@ export function UpgradePrompt({ onClose, reason, remainingCooldown }: UpgradePro
           <div className="flex flex-col items-center rounded-xl border border-gold/20 bg-gold/[0.04] p-5 text-center opacity-90">
             <span className="font-heading text-sm font-bold text-gold">Studio</span>
             <span className="mt-1 font-heading text-3xl font-bold text-white">£50</span>
-            <span className="text-xs text-gray-400">/month</span>
+            <span className="text-xs text-gray-300">/month</span>
             <ul className="mt-3 space-y-1.5 text-left">
               {["Unlimited films", "4K · Commercial license", "Early access"].map((f) => (
-                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                <li key={f} className="flex items-center gap-1.5 text-[11px] text-gray-300">
                   <svg className="h-3 w-3 shrink-0 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
@@ -92,7 +92,7 @@ export function UpgradePrompt({ onClose, reason, remainingCooldown }: UpgradePro
           </div>
         </div>
 
-        <p className="mt-5 text-center text-[11px] text-gray-600">
+        <p className="mt-5 text-center text-[11px] text-gray-300">
           Want early access?{" "}
           <a
             href="#waitlist"

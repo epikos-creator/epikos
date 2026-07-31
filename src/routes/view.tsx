@@ -63,7 +63,7 @@ function SharedFilmView() {
         <div className="max-w-md text-center">
           <img src="/logo.png" alt="Epikos" className="mx-auto mb-6 h-16 w-16 opacity-50" />
           <h1 className="font-heading text-2xl font-bold text-white">Film Not Available</h1>
-          <p className="mt-3 text-gray-400">{error || "This film could not be loaded."}</p>
+          <p className="mt-3 text-gray-300">{error || "This film could not be loaded."}</p>
           <a
             href="/"
             className="mt-6 inline-block rounded-full bg-gold px-6 py-3 font-heading text-sm font-bold tracking-wider text-navy uppercase"
@@ -84,7 +84,7 @@ function SharedFilmView() {
             <img src="/logo.png" alt="Epikos" className="h-8 w-8" />
             <span className="font-heading text-sm font-bold tracking-[0.15em] text-gold uppercase">Epikos</span>
           </a>
-          <span className="font-mono text-[10px] text-gray-500">Shared Film</span>
+          <span className="font-mono text-[10px] text-gray-300">Shared Film</span>
         </div>
       </header>
 
@@ -161,7 +161,7 @@ function SharedFilmView() {
                   </div>
                 )}
 
-                <p className="mt-4 text-xs text-gray-500">
+                <p className="mt-4 text-xs text-gray-300">
                   {scene.cinematic_notes}
                 </p>
               </div>
@@ -173,7 +173,7 @@ function SharedFilmView() {
         <div className="mt-16 text-center">
           <div className="mx-auto mb-6 h-px w-32 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
           <p className="font-heading text-lg font-bold text-gold">Fin</p>
-          <p className="mt-2 text-sm text-gray-500">Created with Epikos — AI-powered filmmaking</p>
+          <p className="mt-2 text-sm text-gray-300">Created with Epikos — AI-powered filmmaking</p>
           <a
             href="/"
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 font-heading text-sm font-bold tracking-wider text-navy uppercase transition hover:bg-gold/90"
@@ -187,7 +187,7 @@ function SharedFilmView() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800/50 px-6 py-8 text-center text-sm text-gray-500">
+      <footer className="border-t border-gray-800/50 px-6 py-8 text-center text-sm text-gray-300">
         <p>&copy; 2026 Epikos. All rights reserved.</p>
       </footer>
     </div>

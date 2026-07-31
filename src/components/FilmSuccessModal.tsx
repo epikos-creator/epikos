@@ -71,7 +71,7 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-500 hover:text-gold transition-colors"
+          className="absolute right-4 top-4 text-gray-300 hover:text-gold transition-colors"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -91,7 +91,7 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
         <h2 className="text-center font-heading text-2xl font-bold text-white">
           🎬 Your Film Is Ready!
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-400">
+        <p className="mt-2 text-center text-sm text-gray-300">
           <strong className="text-gold">{script.title}</strong> — {script.scenes.length} scenes, {script.duration_estimate}
         </p>
 
@@ -99,23 +99,23 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
         <div className="mt-5 grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-gray-800 bg-white/[0.03] p-3 text-center">
             <p className="font-heading text-xl font-bold text-gold">{script.scenes.length}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Scenes</p>
+            <p className="text-[10px] text-gray-300 uppercase tracking-wider">Scenes</p>
           </div>
           <div className="rounded-xl border border-gray-800 bg-white/[0.03] p-3 text-center">
             <p className="font-heading text-xl font-bold text-gold">{script.duration_estimate}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Duration</p>
+            <p className="text-[10px] text-gray-300 uppercase tracking-wider">Duration</p>
           </div>
           <div className="rounded-xl border border-gray-800 bg-white/[0.03] p-3 text-center">
             <p className="font-heading text-xl font-bold text-gold">
               {script.scenes.reduce((sum, s) => sum + s.dialogue.length, 0)}
             </p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Lines</p>
+            <p className="text-[10px] text-gray-300 uppercase tracking-wider">Lines</p>
           </div>
         </div>
 
         {/* Social sharing */}
         <div className="mt-6">
-          <p className="text-center text-xs font-semibold tracking-[0.15em] text-gray-400 uppercase">
+          <p className="text-center text-xs font-semibold tracking-[0.15em] text-gray-300 uppercase">
             Share Your Film
           </p>
           <div className="mt-3 flex items-center justify-center gap-3">
@@ -178,7 +178,7 @@ export function FilmSuccessModal({ script, onClose, isPaid }: FilmSuccessModalPr
                 You're on the Free plan
               </p>
             </div>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-gray-300 mb-4">
               Paid plans are coming soon — unlock unlimited films, remove watermarks, and get 1080p or 4K exports.
             </p>
             <a

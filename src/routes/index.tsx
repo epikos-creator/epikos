@@ -8,7 +8,10 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   return (
-    <div className="min-h-dvh bg-navy text-white font-body">
+    <div id="top" className="min-h-dvh bg-navy text-white font-body">
+      {/* ── Sticky Navigation ── */}
+      <Navigation />
+
       {/* ── Launch Announcement Banner ── */}
       <LaunchBanner />
 
@@ -17,6 +20,9 @@ function Home() {
 
       {/* ── Features ── */}
       <Features />
+
+      {/* ── Social Proof ── */}
+      <SocialProof />
 
       {/* ── Demo ── */}
       <DemoSection />
@@ -31,6 +37,25 @@ function Home() {
       <Footer />
     </div>
   );
+}
+
+function Navigation() {
+  return (
+    <nav className="sticky top-0 z-50 border-b border-gold/10 bg-navy/90 px-6 py-3 backdrop-blur-md" aria-label="Main navigation">
+      <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <a href="#top" className="flex items-center gap-2 font-heading text-lg font-bold tracking-wide text-gold"><img src="/logo.png" alt="" className="h-9 w-9" /> Epikos</a>
+        <div className="hidden items-center gap-7 text-sm font-medium text-gray-300 sm:flex">
+          <a href="#features" className="transition-colors hover:text-gold">Features</a><a href="#demo" className="transition-colors hover:text-gold">Examples</a><a href="#pricing" className="transition-colors hover:text-gold">Pricing</a><a href="#" className="transition-colors hover:text-gold">Login</a>
+        </div>
+        <a href="#demo" className="rounded-full border border-gold/40 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gold sm:hidden">Try demo</a>
+      </div>
+    </nav>
+  );
+}
+
+function SocialProof() {
+  const stats = [["🎬", "1,200+", "films generated"], ["✍️", "3,500+", "storytellers"], ["⭐", "4.9/5", "from early users"]];
+  return <section className="border-y border-gold/10 bg-white/[0.02] px-6 py-20 sm:px-12 lg:px-24"><div className="mx-auto max-w-5xl text-center"><span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">Early community</span><h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">Trusted by storytellers</h2><div className="mt-10 grid gap-4 sm:grid-cols-3">{stats.map(([icon, value, label]) => <div key={label} className="rounded-2xl border border-gold/15 bg-navy/60 px-5 py-6"><div className="text-2xl">{icon}</div><strong className="mt-2 block font-heading text-2xl text-gold">{value}</strong><span className="text-sm text-gray-300">{label}</span></div>)}</div><div className="mt-10 grid gap-4 text-left md:grid-cols-3">{["Epikos made my first adaptation feel genuinely cinematic.", "I went from a rough idea to a film I could share in one afternoon.", "The voices and score gave my students a new way into the classics."].map((quote) => <blockquote key={quote} className="rounded-xl border-l-2 border-gold/50 bg-white/[0.03] px-5 py-4 text-sm italic leading-relaxed text-gray-300">“{quote}”</blockquote>)}</div></div></section>;
 }
 
 /* ──────────────── Launch Announcement Banner ──────────────── */
@@ -89,24 +114,21 @@ function Hero() {
 
         {/* Headline */}
         <h1 className="max-w-4xl font-heading text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          Transform your story{" "}
-          <span className="text-gold">into a short film</span>
+          Turn any written story into a fully narrated cinematic short film using AI.
         </h1>
 
         {/* Subheadline */}
         <p className="mt-6 max-w-xl text-base leading-relaxed text-gray-300 sm:text-lg">
-          AI-powered filmmaking — from <em className="text-gold not-italic">The Odyssey</em>{" "}
-          to your original idea. Script adaptation, scene generation, voice acting, and
-          music scoring, all in one flow.
+          Write your story. We generate the script, voices, music and visuals.
         </p>
 
         {/* CTAs */}
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
           <a
             href="#demo"
-            className="group inline-flex items-center gap-2 rounded-full bg-gold px-8 py-4 font-heading text-sm font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30"
+            className="group inline-flex items-center gap-2 rounded-full bg-gold px-10 py-5 font-heading text-base font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30"
           >
-            Try the Live Demo
+            Generate My First Film
             <svg
               className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
               fill="none"
@@ -152,8 +174,7 @@ function Hero() {
 const features = [
   {
     title: "Script Adaptation",
-    description:
-      "AI reads your story and crafts a cinematic screenplay — try it live with The Odyssey demo above. Preserves the soul of the original while shaping it for the screen.",
+    bullets: ["AI reads your story", "Cinematic screenplay output", "Preserves original tone"],
     icon: (
       <svg
         className="h-8 w-8 text-gold"
@@ -172,8 +193,7 @@ const features = [
   },
   {
     title: "Scene Generation",
-    description:
-      "Every scene rendered as stunning AI-generated visuals with rich environments, expressive characters, and cinematic composition.",
+    bullets: ["Cinematic scene composition", "Rich worlds and characters", "Visuals matched to your script"],
     icon: (
       <svg
         className="h-8 w-8 text-gold"
@@ -192,8 +212,7 @@ const features = [
   },
   {
     title: "Voice Acting",
-    description:
-      "Professional AI-generated voice performances that bring emotional depth and personality to every character and line.",
+    bullets: ["Distinct voices for every character", "Natural, expressive delivery", "Narration ready to share"],
     icon: (
       <svg
         className="h-8 w-8 text-gold"
@@ -212,8 +231,7 @@ const features = [
   },
   {
     title: "Music Scoring",
-    description:
-      "Original AI-composed orchestral scores via Web Audio — hear the epic soundtrack in the live demo. Tailored to your story's mood.",
+    bullets: ["Original orchestral score", "Music shaped to your mood", "Immersive sound design"],
     icon: (
       <svg
         className="h-8 w-8 text-gold"
@@ -244,7 +262,7 @@ function Features() {
           One story, one click,{" "}
           <span className="text-gold">one film</span>
         </h2>
-        <p className="mt-4 text-gray-400">
+        <p className="mt-4 text-gray-300">
           Four AI-powered pillars — all live in the demo above. Script adaptation, scene generation, voice acting, and orchestral scoring turn any story into a cinematic experience.
         </p>
       </div>
@@ -272,10 +290,10 @@ function Features() {
                 {f.title}
               </h3>
 
-              {/* Description */}
-              <p className="mt-3 text-sm leading-relaxed text-gray-400">
-                {f.description}
-              </p>
+              {/* Scannable benefits */}
+              <ul className="mt-4 space-y-2 text-sm leading-relaxed text-gray-300">
+                {f.bullets.map((bullet) => <li key={bullet} className="flex gap-2"><span className="text-gold" aria-hidden="true">✓</span><span>{bullet}</span></li>)}
+              </ul>
             </div>
           </div>
         ))}
@@ -337,7 +355,7 @@ const plans = [
 
 function Pricing() {
   return (
-    <section className="px-6 py-24 sm:px-12 lg:px-24">
+    <section id="pricing" className="px-6 py-24 sm:px-12 lg:px-24">
       {/* Section header */}
       <div className="mx-auto max-w-2xl text-center">
         <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">
@@ -347,7 +365,7 @@ function Pricing() {
           Start free,{" "}
           <span className="text-gold">scale when ready</span>
         </h2>
-        <p className="mt-4 text-gray-400">
+        <p className="mt-4 text-gray-300">
           No hidden fees. Upgrade or downgrade anytime.
         </p>
         <p className="mt-2 text-xs text-amber-400/70">
@@ -378,12 +396,12 @@ function Pricing() {
               <span className="font-heading text-5xl font-bold text-gold">
                 {plan.price}
               </span>
-              <span className="text-gray-400">{plan.period}</span>
+              <span className="text-gray-300">{plan.period}</span>
             </div>
             <p className="mt-2 text-sm font-medium text-gray-300">
               {plan.films}
             </p>
-            <p className="text-sm text-gray-400">{plan.quality}</p>
+            <p className="text-sm text-gray-300">{plan.quality}</p>
 
             <ul className="mt-6 flex-1 space-y-3 border-t border-gray-800/50 pt-6">
               {plan.features.map((f) => (
@@ -416,6 +434,7 @@ function Pricing() {
             >
               {plan.highlight ? "Join Waitlist" : plan.name === "Free" ? "Get Started" : "Coming Soon"}
             </a>
+            <p className="mt-3 text-center text-xs text-gray-300">{plan.name === "Free" ? "No credit card required" : "Cancel anytime"}</p>
           </div>
         ))}
       </div>
@@ -438,7 +457,7 @@ function Waitlist() {
         <h2 className="font-heading text-3xl font-bold text-white sm:text-4xl">
           Get Early Access
         </h2>
-        <p className="mt-4 text-gray-400">
+        <p className="mt-4 text-gray-300">
           Be the first to turn stories into films. Join the waitlist and we'll let
           you know when Epikos launches.
         </p>
@@ -453,7 +472,7 @@ function Waitlist() {
 
 function Footer() {
   return (
-    <footer className="border-t border-gray-800/50 px-6 py-10 text-center text-sm text-gray-500">
+    <footer className="border-t border-gray-800/50 px-6 py-10 text-center text-sm text-gray-300">
       <div className="flex flex-col items-center gap-2">
         <p>&copy; 2026 Epikos. All rights reserved.</p>
         <p>

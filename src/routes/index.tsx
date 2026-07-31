@@ -118,6 +118,21 @@ function Hero() {
             </svg>
           </a>
           <a
+            href="#demo?preset=odyssey"
+            className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-8 py-4 font-heading text-sm font-bold tracking-widest text-gold uppercase transition-all hover:border-gold hover:bg-gold/10"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+            </svg>
+            Watch the Odyssey
+          </a>
+          <a
             href="#waitlist"
             className="inline-flex items-center gap-2 rounded-full border border-gold/40 px-8 py-4 font-heading text-sm font-bold tracking-widest text-gold uppercase transition-all hover:border-gold hover:bg-gold/10"
           >

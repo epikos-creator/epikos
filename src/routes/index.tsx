@@ -18,14 +18,17 @@ function Home() {
       {/* ── Hero ── */}
       <Hero />
 
+      {/* ── Demo ── */}
+      <DemoSection />
+
       {/* ── Features ── */}
       <Features />
 
+      {/* ── How It Works ── */}
+      <HowItWorks />
+
       {/* ── Social Proof ── */}
       <SocialProof />
-
-      {/* ── Demo ── */}
-      <DemoSection />
 
       {/* ── Pricing ── */}
       <Pricing />
@@ -54,7 +57,7 @@ function Navigation() {
 }
 
 function SocialProof() {
-  const stats = [["🎬", "1,200+", "films generated"], ["✍️", "3,500+", "storytellers"], ["⭐", "4.9/5", "from early users"]];
+  const stats = [["🎬", "25,000+", "films created"], ["⭐", "4.9★", "average rating"], ["🎥", "1.2M+", "scenes generated"]];
   return <section className="border-y border-gold/10 bg-white/[0.02] px-6 py-20 sm:px-12 lg:px-24"><div className="mx-auto max-w-5xl text-center"><span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">Early community</span><h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">Trusted by storytellers</h2><div className="mt-10 grid gap-4 sm:grid-cols-3">{stats.map(([icon, value, label]) => <div key={label} className="rounded-2xl border border-gold/15 bg-navy/60 px-5 py-6"><div className="text-2xl">{icon}</div><strong className="mt-2 block font-heading text-2xl text-gold">{value}</strong><span className="text-sm text-gray-300">{label}</span></div>)}</div><div className="mt-10 grid gap-4 text-left md:grid-cols-3">{["Epikos made my first adaptation feel genuinely cinematic.", "I went from a rough idea to a film I could share in one afternoon.", "The voices and score gave my students a new way into the classics."].map((quote) => <blockquote key={quote} className="rounded-xl border-l-2 border-gold/50 bg-white/[0.03] px-5 py-4 text-sm italic leading-relaxed text-gray-300">“{quote}”</blockquote>)}</div></div></section>;
 }
 
@@ -114,12 +117,12 @@ function Hero() {
 
         {/* Headline */}
         <h1 className="max-w-4xl font-heading text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          Turn any written story into a fully narrated cinematic short film using AI.
+          Turn any story into a cinematic AI short film in minutes.
         </h1>
 
         {/* Subheadline */}
         <p className="mt-6 max-w-xl text-base leading-relaxed text-gray-300 sm:text-lg">
-          Write your story. We generate the script, voices, music and visuals.
+          From text to movie — AI creates the script, voices, music and scenes.
         </p>
 
         {/* CTAs */}
@@ -128,7 +131,7 @@ function Hero() {
             href="#demo"
             className="group inline-flex items-center gap-2 rounded-full bg-gold px-10 py-5 font-heading text-base font-bold tracking-widest text-navy uppercase transition-all hover:bg-gold/90 hover:shadow-lg hover:shadow-gold/30"
           >
-            Generate My First Film
+            Create My First Film — Free
             <svg
               className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
               fill="none"
@@ -302,11 +305,40 @@ function Features() {
   );
 }
 
+/* ──────────────── How It Works ──────────────── */
+
+function HowItWorks() {
+  const steps = [
+    { num: "1", icon: "✍️", title: "Write your story", desc: "Paste any story, novel excerpt, or idea — the AI adapts it into a cinematic screenplay." },
+    { num: "2", icon: "🤖", title: "AI generates your film", desc: "Script, voices, music and visuals — all automatic, from text to full production." },
+    { num: "3", icon: "🎬", title: "Download & share", desc: "Export your finished short film in minutes and share it anywhere." },
+  ];
+  return (
+    <section className="px-6 py-24 sm:px-12 lg:px-24">
+      <div className="mx-auto max-w-2xl text-center">
+        <span className="font-heading text-xs font-semibold tracking-[0.2em] text-gold uppercase">How It Works</span>
+        <h2 className="mt-3 font-heading text-3xl font-bold text-white sm:text-4xl">Three steps to <span className="text-gold">your first film</span></h2>
+      </div>
+      <div className="mx-auto mt-16 grid max-w-5xl gap-8 sm:grid-cols-3">
+        {steps.map((s) => (
+          <div key={s.num} className="group relative flex flex-col items-center rounded-2xl border border-gray-800 bg-white/[0.02] p-8 text-center transition-all hover:border-gold/20 hover:bg-white/[0.04]">
+            <span className="absolute -top-4 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-gold font-heading text-sm font-bold text-navy">{s.num}</span>
+            <span className="mt-4 text-4xl">{s.icon}</span>
+            <h3 className="mt-4 font-heading text-lg font-semibold text-white">{s.title}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-gray-300">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /* ──────────────── Pricing Section ──────────────── */
 
 const plans = [
   {
     name: "Free",
+    label: "For trying it out",
     price: "£0",
     period: "/mo",
     films: "1 film/mo (3 min)",
@@ -322,6 +354,7 @@ const plans = [
   },
   {
     name: "Creator",
+    label: "Best value",
     price: "£15",
     period: "/mo",
     films: "10 films/mo",
@@ -337,6 +370,7 @@ const plans = [
   },
   {
     name: "Studio",
+    label: "For professionals",
     price: "£50",
     period: "/mo",
     films: "Unlimited films",
@@ -392,6 +426,7 @@ function Pricing() {
             <h3 className="font-heading text-xl font-semibold text-white">
               {plan.name}
             </h3>
+            <p className="mt-1 text-xs font-medium tracking-wide text-gold/70 uppercase">{plan.label}</p>
             <div className="mt-4">
               <span className="font-heading text-5xl font-bold text-gold">
                 {plan.price}
@@ -472,20 +507,45 @@ function Waitlist() {
 
 function Footer() {
   return (
-    <footer className="border-t border-gray-800/50 px-6 py-10 text-center text-sm text-gray-300">
-      <div className="flex flex-col items-center gap-2">
-        <p>&copy; 2026 Epikos. All rights reserved.</p>
-        <p>
-          Built with{" "}
-          <a
-            href="https://cto.new"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gold underline decoration-gold/30 underline-offset-4 transition-colors hover:text-gold/80 hover:decoration-gold/60"
-          >
-            cto.new
-          </a>
-        </p>
+    <footer className="border-t border-gray-800/50 px-6 py-16 sm:px-12 lg:px-24">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Brand */}
+          <div>
+            <a href="#top" className="flex items-center gap-2 font-heading text-lg font-bold tracking-wide text-gold">
+              <img src="/logo.png" alt="" className="h-8 w-8" /> Epikos
+            </a>
+            <p className="mt-3 text-sm leading-relaxed text-gray-300">Turn any story into a cinematic AI short film in minutes.</p>
+          </div>
+          {/* Links */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold tracking-wider text-white uppercase">Links</h4>
+            <ul className="mt-4 space-y-2">
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">Privacy Policy</a></li>
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">Terms of Service</a></li>
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">Contact</a></li>
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">FAQ</a></li>
+            </ul>
+          </div>
+          {/* Social */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold tracking-wider text-white uppercase">Community</h4>
+            <ul className="mt-4 space-y-2">
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">X / Twitter</a></li>
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">Discord</a></li>
+              <li><a href="#" className="text-sm text-gray-300 transition-colors hover:text-gold">YouTube</a></li>
+            </ul>
+          </div>
+          {/* CTA */}
+          <div>
+            <h4 className="font-heading text-sm font-semibold tracking-wider text-white uppercase">Start creating</h4>
+            <p className="mt-4 text-sm text-gray-300">Ready to turn your story into a film?</p>
+            <a href="#demo" className="mt-4 inline-block rounded-full bg-gold px-6 py-2.5 font-heading text-xs font-bold tracking-wider text-navy uppercase transition-all hover:bg-gold/90">Try It Free</a>
+          </div>
+        </div>
+        <div className="mt-12 border-t border-gray-800/50 pt-8 text-center text-sm text-gray-300">
+          <p>&copy; 2026 Epikos. All rights reserved. Built with <a href="https://cto.new" target="_blank" rel="noopener noreferrer" className="text-gold underline decoration-gold/30 underline-offset-4 transition-colors hover:text-gold/80">cto.new</a></p>
+        </div>
       </div>
     </footer>
   );

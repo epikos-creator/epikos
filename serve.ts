@@ -9,6 +9,7 @@
 // with an already-running server. Every sandbox user has passwordless sudo, so
 // the takeover works across user boundaries.
 import handler from "./dist/server/server.js";
+import { handleStripeWebhook, STRIPE_WEBHOOK_PATH } from "./src/server/stripe.ts";
 
 // Pinned, NOT read from the environment. The published preview URL
 // (<label>.<PUBLIC_SITE_DOMAIN>) is reverse-proxied to 0.0.0.0:3000 inside the
@@ -41,6 +42,12 @@ for (let attempt = 1; ; attempt++) {
       hostname: HOST,
       async fetch(req) {
         const { pathname } = new URL(req.url);
+        // Stripe webhook: raw HTTP endpoint outside the TanStack router (see
+        // src/server/stripe.ts for why) so the exact request body is available
+        // for signature verification.
+        if (pathname === STRIPE_WEBHOOK_PATH && req.method === "POST") {
+          return handleStripeWebhook(req);
+        }
         if (pathname !== "/") {
           const file = Bun.file(CLIENT_DIR + pathname);
           if (await file.exists()) return new Response(file);

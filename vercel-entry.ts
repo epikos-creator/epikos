@@ -11,6 +11,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import handler from "./dist/server/server.js";
+import { handleStripeWebhook, STRIPE_WEBHOOK_PATH } from "./src/server/stripe.ts";
 
 const fetchHandler = handler as {
   fetch: (request: Request) => Response | Promise<Response>;
@@ -42,7 +43,13 @@ export default async function vercelHandler(
   res: ServerResponse,
 ): Promise<void> {
   try {
-    const webRes = await fetchHandler.fetch(toWebRequest(req));
+    const webReq = toWebRequest(req);
+    // Stripe webhook: handle before the TanStack router so the raw (unconsumed)
+    // request body is available for signature verification (see src/server/stripe.ts).
+    const webRes =
+      new URL(webReq.url).pathname === STRIPE_WEBHOOK_PATH && webReq.method === "POST"
+        ? await handleStripeWebhook(webReq)
+        : await fetchHandler.fetch(webReq);
     res.statusCode = webRes.status;
     webRes.headers.forEach((value, key) => res.setHeader(key, value));
     if (webRes.body) {

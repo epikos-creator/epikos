@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useState } from "react";
 import type { Script, Scene } from "~/server/generate-script";
+import { sceneImage } from "~/lib/odyssey-frames";
 
 interface VideoExportState {
   status: "idle" | "recording" | "processing" | "done" | "error";
@@ -27,10 +28,6 @@ export function useVideoExport(script: Script | null) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const abortRef = useRef(false);
 
-  const sceneImage = useCallback((sceneNumber: number): string => {
-    const idx = ((sceneNumber - 1) % 6) + 1;
-    return `/images/odyssey-${idx}.png`;
-  }, []);
 
   const exportVideo = useCallback(async () => {
     if (!script || script.scenes.length === 0) return;
@@ -423,7 +420,7 @@ export function useVideoExport(script: Script | null) {
 
     recorder.stop();
     audioCtx.close();
-  }, [script, sceneImage]);
+  }, [script]);
 
   const cancelExport = useCallback(() => {
     abortRef.current = true;

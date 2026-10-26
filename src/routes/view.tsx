@@ -119,8 +119,8 @@ function SharedFilmView() {
               {/* Scene image */}
               <div className="relative aspect-video w-full bg-navy/50">
                 <img
-                  src={`/images/odyssey-${((scene.scene_number - 1) % 6) + 1}.png`}
-                  alt={`Scene ${scene.scene_number}`}
+                  src={sceneImage(scene.scene_number)}
+                  alt={`Scene ${scene.scene_number}: ${scene.location}`}
                   className="h-full w-full object-cover"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";

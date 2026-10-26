@@ -7,6 +7,30 @@ import { StoryboardViewer } from "~/components/StoryboardViewer";
 import { AutoFilmPipeline } from "~/components/AutoFilmPipeline";
 import { FilmHistory, type SavedFilm } from "~/components/FilmHistory";
 
+// Storyboard strip on the landing demo — real frames from the Odyssey set.
+const FEATURE_FRAMES = [
+  {
+    src: "/images/odyssey/01-ithaca-dusk.jpg",
+    label: "Ithaca at Dusk",
+    alt: "AI-generated scene still: Odysseus's ship approaching the rocky shore of Ithaca at dusk.",
+  },
+  {
+    src: "/images/odyssey/03-cyclops-cave.jpg",
+    label: "The Cyclops's Cave",
+    alt: "AI-generated scene still: a giant cyclops silhouetted in the mouth of his cave, tiny Greek sailors by a campfire.",
+  },
+  {
+    src: "/images/odyssey/04-sirens.jpg",
+    label: "The Sirens",
+    alt: "AI-generated scene still: a moonlit Greek ship rowing past the Sirens' bone-white cliffs.",
+  },
+  {
+    src: "/images/odyssey/08-the-return.jpg",
+    label: "The Return",
+    alt: "AI-generated scene still: Odysseus drawing the great bow in the torchlit great hall of Ithaca.",
+  },
+];
+
 export function DemoSection() {
   const [prompt, setPrompt] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -102,6 +126,31 @@ export function DemoSection() {
           automatic.
         </p>
       </div>
+
+      {/* ── Storyboard strip — real frames from the film player ── */}
+      <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4">
+        {FEATURE_FRAMES.map((frame) => (
+          <figure
+            key={frame.src}
+            className="group overflow-hidden rounded-xl border border-gold/20 bg-white/[0.03] transition-colors hover:border-gold/40"
+          >
+            <div className="aspect-video w-full overflow-hidden">
+              <img
+                src={frame.src}
+                alt={frame.alt}
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+            <figcaption className="px-3 py-2 font-heading text-[10px] font-semibold tracking-wider text-gold/70 uppercase">
+              {frame.label}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      <p className="mx-auto mt-4 max-w-xl text-center text-xs text-gray-400">
+        Frames from the Odyssey demo — AI-generated scene stills, straight from the player.
+      </p>
 
       {/* ── Odyssey Preset Pill ── */}
       {!autoMode && status !== "done" && (

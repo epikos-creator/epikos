@@ -4,16 +4,12 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import type { Script, Scene } from "~/server/generate-script";
 import { useVoiceover } from "~/hooks/useVoiceover";
 import type { VoiceProfile } from "~/server/generate-voiceover";
+import { sceneImage } from "~/lib/odyssey-frames";
 
 interface StoryboardViewerProps {
   script: Script;
 }
 
-/* ── Map scene number to one of the 6 generated images (cycles) ── */
-function sceneImage(sceneNumber: number): string {
-  const idx = ((sceneNumber - 1) % 6) + 1;
-  return `/images/odyssey-${idx}.png`;
-}
 
 /* ── Truncate long descriptions for the card ── */
 function shortDesc(text: string, maxLen = 90): string {

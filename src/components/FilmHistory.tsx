@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Script } from "~/server/generate-script";
+import { sceneImage } from "~/lib/odyssey-frames";
 
 export interface SavedFilm {
   id: string;
@@ -68,10 +69,6 @@ export function FilmHistory({ onSelect, activeFilmId }: FilmHistoryProps) {
 
   if (films.length === 0) return null;
 
-  const sceneImage = (sceneNumber: number) => {
-    const idx = ((sceneNumber - 1) % 6) + 1;
-    return `/images/odyssey-${idx}.png`;
-  };
 
   return (
     <div className="mx-auto mt-16 max-w-5xl">

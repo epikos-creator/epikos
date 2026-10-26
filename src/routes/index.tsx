@@ -85,6 +85,13 @@ function Hero() {
     <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 text-center">
       {/* Background decorative elements */}
       <div className="pointer-events-none absolute inset-0 select-none">
+        {/* Key art backdrop — hero-key-art.jpg (The Odyssey demo) */}
+        <img
+          src="/images/odyssey/hero-key-art.jpg"
+          alt="AI-generated key art for the Odyssey demo: a Greek ship at sea under a dark gold sky"
+          className="h-full w-full object-cover opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/50 to-navy/90" />
         {/* Radial gradient behind logo */}
         <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/5 blur-[100px]" />
         {/* Subtle grid */}

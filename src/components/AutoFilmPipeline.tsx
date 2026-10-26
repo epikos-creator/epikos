@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Script, Scene } from "~/server/generate-script";
 import { generateScript } from "~/server/generate-script";
 import type { VoiceProfile } from "~/server/generate-voiceover";
+import { sceneImage } from "~/lib/odyssey-frames";
 import { useBackgroundMusic, detectEmotion, type MusicEmotion } from "~/hooks/useBackgroundMusic";
 import { useVideoExport } from "~/hooks/useVideoExport";
 import { saveFilm, type SavedFilm } from "~/components/FilmHistory";
@@ -54,11 +55,6 @@ const DEFAULT_VOICE_PROFILES: Record<string, VoiceProfile> = {
   "NARRATOR (V.O.)": { character: "Narrator", pitch: 1.0, rate: 0.95, volume: 1.0 },
 };
 
-/* ── Scene image mapper ── */
-function sceneImage(sceneNumber: number): string {
-  const idx = ((sceneNumber - 1) % 6) + 1;
-  return `/images/odyssey-${idx}.png`;
-}
 
 /* ── Pick voice from browser ── */
 function pickVoice(targetPitch: number): SpeechSynthesisVoice | null {

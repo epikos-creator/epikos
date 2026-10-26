@@ -14,6 +14,9 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Epikos — Transform your story into a short film" },
+      { property: "og:image", content: "https://33464bead194f0fc7151109baa2e9b19.ctonew.app/images/odyssey/hero-key-art.jpg" },
+      { property: "og:image:alt", content: "Epikos — AI-generated key art of a Greek ship at sea, gold and navy" },
+      { property: "og:title", content: "Epikos — Transform your story into a short film" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

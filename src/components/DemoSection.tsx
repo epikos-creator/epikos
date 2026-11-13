@@ -121,9 +121,31 @@ export function DemoSection() {
           Featured Demo: The Odyssey
         </p>
         <p className="mt-3 text-gray-300">
-          Watch Homer's epic come alive — from Odysseus facing the Cyclops to a full
-          cinematic short film with orchestral score and voice acting. One click, fully
-          automatic.
+          Watch Homer's epic come alive — from Odysseus facing the Cyclops to a
+          cinematic short cut with AI-generated scene art, a synthesised score
+          and burned-in captions. Give it a story and the same one-click pipeline
+          will build the rest.
+        </p>
+      </div>
+
+      {/* ── The film — the first thing a visitor meets ── */}
+      <div className="mx-auto mt-12 max-w-4xl">
+        <div className="overflow-hidden rounded-2xl border border-gold/20 bg-black shadow-2xl shadow-gold/5">
+          <video
+            controls
+            playsInline
+            preload="metadata"
+            poster="/film/odyssey-cyclops-poster.jpg"
+            width={1280}
+            height={720}
+            className="block aspect-video h-auto w-full"
+          >
+            <source src="/film/odyssey-cyclops.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-xs text-gray-400">
+          A short cut of the Odyssey demo — AI-generated scene art, a synthesised
+          score, and burned-in captions.
         </p>
       </div>
 
